@@ -3,7 +3,7 @@
 > **KISS (Keep It Simple, Stupid) Model Context Protocol Server for Java.**  
 > No Spring. No Project Reactor. No dynamic bytecode magic. Zero framework bloat.
 
-`stupidMCP4j` is an ultra-lightweight, configuration-driven Model Context Protocol (MCP) server for Java 11 & 17+. It provides a bare-metal HTTP/S tool-execution server using standard Java primitives (`com.sun.net.httpserver`), standard JSON-RPC 2.0, and a single, predictable command interface.
+`stupidMCP4j` is an ultra-lightweight, configuration-driven Model Context Protocol (MCP) server for Java 17+. It provides a bare-metal HTTP/S tool-execution server using standard Java primitives (`com.sun.net.httpserver`), standard JSON-RPC 2.0, and a single, predictable command interface.
 
 ---
 

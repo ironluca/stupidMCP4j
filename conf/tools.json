@@ -1,0 +1,14 @@
+[
+
+    {
+
+        "name":"toolName",
+        "description":"description",
+        "implementation":"fullyQualifiedClassName",
+        "roles":["someRole"],
+        "inputSchema":{}
+
+    }
+
+
+]

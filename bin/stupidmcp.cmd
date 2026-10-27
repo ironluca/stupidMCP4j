@@ -23,6 +23,6 @@ rem Build classpath using STUPIDMCP_HOME (Windows uses semicolons)
 set "CP=%STUPIDMCP_HOME%\lib\*;%STUPIDMCP_HOME%\plugin"
 
 echo Starting stupidMCP4j (Home: %STUPIDMCP_HOME%)...
-"%JAVACMD%" -cp "%CP%" io.github.ironluca.stupidmcp4j.Server %*
+"%JAVACMD%" -cp "%CP%" io.github.ironluca.stupidmcp4j.StupidMCP %*
 
 endlocal

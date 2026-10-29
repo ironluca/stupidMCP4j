@@ -20,7 +20,7 @@ if not exist "%JAVACMD%" (
 )
 
 rem Build classpath using MCP_HOME (Windows uses semicolons)
-set "CP=%MCP_HOME%\lib\*;%MCP_HOME%\tools\*"
+set "CP=%MCP_HOME%\lib\*;%MCP_HOME%\tools\*;%MCP_HOME%\conf"
 
 echo Starting stupidMCP4j (Home: %MCP_HOME%)...
 "%JAVACMD%" -cp "%CP%" io.github.ironluca.stupidmcp4j.server.MCPServer %*

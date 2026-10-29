@@ -22,7 +22,7 @@
         </dependencySet>
     </dependencySets>
 
-    <!-- Copies bin/ and conf/ directories from project root -->
+    <!-- Copies bin/, conf/ and tools/ directories from project root -->
     <fileSets>
         <!-- bin folder with executable permissions for shell scripts -->
         <fileSet>
@@ -37,6 +37,15 @@
             <outputDirectory>conf</outputDirectory>
             <fileMode>0644</fileMode>
         </fileSet>
+
+        <!-- tools folder-->
+        <fileSet>
+            <directory>tools</directory>
+            <outputDirectory>tools</outputDirectory>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
+        </fileSet>
+
     </fileSets>
 
     <!-- Copies README.md to the root directory inside the zip -->

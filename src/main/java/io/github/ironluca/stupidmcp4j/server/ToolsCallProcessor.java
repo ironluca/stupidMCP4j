@@ -154,7 +154,7 @@ class ToolsCallProcessor {
                 if(!errors.isEmpty()){
 
                     ObjectNode response=makeEmptyResponse(messageID, true);
-                    ArrayNode content=(ArrayNode)response.get("content");
+                    ArrayNode content=(ArrayNode)response.get("result").get("content");
 
                     for(int i=0;i<errors.size();i++)
                         content.add(makeContent(errors.get(i)));
@@ -205,6 +205,8 @@ class ToolsCallProcessor {
 
         }catch(Exception e){
 
+            e.printStackTrace();
+
             error=makeError(messageID, -32603, "Internal server error while executing tool.");
             sendResponse(exchange, 500, error);
             return;
@@ -236,7 +238,7 @@ class ToolsCallProcessor {
         if(data==null)contentNode.put("text", "No response is available");
         else if(data instanceof String)contentNode.put("text", (String)data);
         //First write produces JSON String, next one converts to escaped string
-        else contentNode.put("text", mapper.writeValueAsString(mapper.writeValueAsString(data)));
+        else contentNode.put("text", mapper.writeValueAsString(data));
 
         return contentNode;
 

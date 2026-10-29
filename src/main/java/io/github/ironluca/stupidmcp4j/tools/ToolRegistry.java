@@ -53,12 +53,8 @@ public class ToolRegistry {
 
         mapper=new ObjectMapper();
 
-        //TODO - Uncomment after testing
         //This will always exist, as this is checked during server startup
-        //toolsConfigPath=Paths.get(System.getenv(envStupidmcpHome), confDir, toolsConf);
-
-        //TODO - Remove after testing
-        toolsConfigPath=Paths.get("/home/sanjay-d/workspaces/git-workspace/stupidMCP4j", confDir, toolsConf);
+        toolsConfigPath=Paths.get(System.getenv(envStupidmcpHome), confDir, toolsConf);
 
         toolDefs=new ArrayList<>();
         toolMethodMap=new HashMap<>();

@@ -51,17 +51,14 @@ public class MCPServer {
 
     private HttpServer server;
 
-    private ToolRegistry toolRegistry;
-
     private void start(){
 
-        //TODO - Uncomment after testing
-        //String mcphome=System.getenv(envStupidmcpHome);
+        //System.out.println("System class.path: " + System.getProperty("java.class.path"));
+
+        String mcphome=System.getenv(envStupidmcpHome);
 
         System.out.println("##### stupidMCP4j #####");
         System.out.println("## Retrieving environment variables ...");
-        //TODO - Remove this after testing
-        String mcphome="/home/sanjay-d/workspaces/git-workspace/stupidMCP4j";
         if(mcphome==null || mcphome.isBlank()){
 
             System.out.println("Cannot proceed, STUPIDMCP_HOME environment variable has not been set");
@@ -105,7 +102,7 @@ public class MCPServer {
         //Initialize the tools
         try{
 
-            toolRegistry=ToolRegistry.getToolRegistry();
+            ToolRegistry.getToolRegistry();
 
         }catch(Exception e){
             e.printStackTrace();

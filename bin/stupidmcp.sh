@@ -20,7 +20,7 @@ if [ ! -x "$JAVACMD" ]; then
 fi
 
 # Build classpath using MCP_HOME
-CP="$MCP_HOME/lib/*:$MCP_HOME/tools/*"
+CP="$MCP_HOME/lib/*:$MCP_HOME/tools/*:$MCP_HOME/conf"
 
 echo "Starting stupidMCP4j (Home: $MCP_HOME)..."
 exec "$JAVACMD" \

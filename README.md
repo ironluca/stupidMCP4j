@@ -165,7 +165,7 @@ Any tool implementation must satisfy two requirements:
 * **Return Value (`Object`):**
   * **`String`:** Placed directly into the response `content` block as text.
   * **`Map` / POJO:** Serialized to a JSON text string.
-  * **`List`:** Each element within the list is evaluated and converted to a distinct item inside the response `content` array.
+  * **`List`:** Serialized as JSON array in the `content`.
 * **Error Handling:** If execution fails, throw an `Exception`. The server catches the exception, sets `"isError": true`, and forwards `exception.getMessage()` back to the MCP client.
 
 #### Example: `PassthroughTool.java`

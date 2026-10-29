@@ -2,11 +2,20 @@
 
     {
 
-        "name":"toolName",
-        "description":"description",
-        "implementation":"fullyQualifiedClassName",
-        "roles":["someRole"],
-        "inputSchema":{}
+        "name":"passthrough_tool",
+        "title":"Pass Through Tool",
+        "description":"A passthrough tool for testing, supports only one optional parameter called 'message' of string type",
+        "implementation":"io.github.ironluca.stupidmcp4j.tools.PassthroughTool",
+        "roles":[],
+        "inputSchema":{
+            "type": "object",
+            "properties": {
+                "message": {
+                "type": "string",
+                "description": "An optional message parameter."
+                }
+            }
+        }
 
     }
 

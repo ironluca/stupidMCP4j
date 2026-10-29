@@ -9,12 +9,10 @@ import static io.github.ironluca.stupidmcp4j.ConfigNV.toolsConf;
 
 import com.sun.net.httpserver.HttpServer;
 
+import io.github.ironluca.stupidmcp4j.tools.ToolRegistry;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -53,6 +51,7 @@ public class MCPServer {
 
     private HttpServer server;
 
+    private ToolRegistry toolRegistry;
 
     private void start(){
 
@@ -63,8 +62,9 @@ public class MCPServer {
         String mcphome="/home/sanjay-d/workspaces/git-workspace/stupidMCP4j";
         if(mcphome==null || mcphome.isBlank()){
 
-            System.out.println("Cannot proceed, STUPIDMCP_HOME environment variable has not been provided");
-            return;
+            System.out.println("Cannot proceed, STUPIDMCP_HOME environment variable has not been set");
+            System.out.println("Exiting ...");
+            System.exit(1);
 
         }//if closing
 
@@ -75,8 +75,9 @@ public class MCPServer {
         //The tools.json must exist in conf directory, without this the server cannot operate
         if(!Files.exists(toolsConfPath)){
 
-            System.out.println("Cannot proceed, the tools configuration does not exist");
-            return;
+            System.out.println("Cannot proceed, the tools configuration does not exist, cannot proceed");
+            System.out.println("Exiting ...");
+            System.exit(1);
 
         }//if closing
 
@@ -92,7 +93,18 @@ public class MCPServer {
 
 
         //Initialize the tools
+        try{
 
+            toolRegistry=ToolRegistry.getToolRegistry();
+
+        }catch(Exception e){
+            e.printStackTrace();
+            System.out.println("Could not load tools ... below is the error");
+            System.out.println(e.getMessage());
+            System.out.println("Exiting ...");
+            System.exit(1);
+        
+        }//catch closing
 
 
         //Initialize and start the server

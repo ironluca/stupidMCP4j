@@ -42,4 +42,7 @@ public interface ConfigNV {
     public static final String serverName="stupidMCP4j";
     public static final String serverVersion="1.0.0";
 
+    /** Tools names are minimum 1 and maximum 128 characters. It allows alpha-numeric, dot, underscore and dash. */
+    public static final String toolNameValidationRegex="^[a-zA-Z0-9._-]{1,128}$";
+
 }//interface closing

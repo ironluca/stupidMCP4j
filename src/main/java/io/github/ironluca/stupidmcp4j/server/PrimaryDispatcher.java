@@ -19,6 +19,8 @@ class PrimaryDispatcher {
     private ServerDiscoverProcessor serverDiscover=new ServerDiscoverProcessor();
     private InitializeProcessor initialize=new InitializeProcessor();
     private NotificationsInitializedProcessor notificationsInitialized=new NotificationsInitializedProcessor();
+    private ToolsListProcessor toolsList=new ToolsListProcessor();
+    private ToolsCallProcessor toolsCall=new ToolsCallProcessor();
 
     void dispatch(HttpExchange exchange, String requestBody) throws IOException{
         
@@ -85,8 +87,8 @@ class PrimaryDispatcher {
                 case "server/discover":{serverDiscover.process(id,exchange, bodyNode); break;}
                 case "initialize":{initialize.process(id, exchange, bodyNode); break;}
                 case "notifications/initialized":{notificationsInitialized.process(id, exchange, bodyNode); break;}
-                case "tools/list":break;
-                case "tools/call":break;
+                case "tools/list":{toolsList.process(id, exchange, bodyNode); break;}
+                case "tools/call":{toolsCall.process(id, exchange, bodyNode); break;}
                 case "ping":break;
 
                 default:{makeError(id, -32601, "Method not supported");sendResponse(exchange, 400, error); break;}

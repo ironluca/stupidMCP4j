@@ -22,7 +22,7 @@
         </dependencySet>
     </dependencySets>
 
-    <!-- Copies bin/, conf/ and tools/ directories from project root -->
+    <!-- Copies bin/, conf/ , aux/ and tools/ directories from project root -->
     <fileSets>
         <!-- bin folder with executable permissions for shell scripts -->
         <fileSet>
@@ -45,6 +45,14 @@
             <fileMode>0644</fileMode>
             <directoryMode>0755</directoryMode>
         </fileSet>
+
+        <!-- aux folder-->
+        <fileSet>
+            <directory>aux</directory>
+            <outputDirectory>aux</outputDirectory>
+            <fileMode>0644</fileMode>
+            <directoryMode>0755</directoryMode>
+        </fileSet>        
 
     </fileSets>
 

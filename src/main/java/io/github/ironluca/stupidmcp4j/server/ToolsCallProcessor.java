@@ -142,29 +142,35 @@ class ToolsCallProcessor {
             ToolDefinition toolDef=registry.getToolDefinition(toolName);
             ObjectNode schemaNode=toolDef.inputSchema;
 
+
+
+            //Validate the parameter against schema. If validation fails send each error as a separate object in 'content' 
+            //of the response. Set the 'isError' to true.
+            Schema schema=schemaFactory.getSchema(schemaNode);
+            List<com.networknt.schema.Error> errors=null;
+            
             //Check if the parameter is actually provided, it is not mandatory by specification.
-            //It also cannot be 'null' but if it is, we a forgiving and consider it not to be provided.
-            if(!argumentsNode.isMissingNode() && !argumentsNode.isNull()){
+            //It also cannot be 'null' but if it is, we are forgiving and consider it not to be provided.
+            //If it is not provided or is 'null', validate the schema agains a Jackson ObjectNode (empty object)
+            //It may be possible that the tool expects parameters by the client did not provide it, therefore a 
+            //check against an empty ObjectNode is required
+            if(!argumentsNode.isMissingNode() && !argumentsNode.isNull())
+                errors=schema.validate(argumentsNode);
+            else errors=schema.validate(mapper.createObjectNode());//Validate against an empty ObjectNode
 
-                //Validate the parameter against schema. If validation fails send each error as a separate object in 'content' 
-                //of the response. Set the 'isError' to true.
-                Schema schema=schemaFactory.getSchema(schemaNode);
-                List<com.networknt.schema.Error> errors=schema.validate(argumentsNode);
+            //Send the errors
+            if(!errors.isEmpty()){
 
-                if(!errors.isEmpty()){
+                ObjectNode response=makeEmptyResponse(messageID, true);
+                ArrayNode content=(ArrayNode)response.get("result").get("content");
 
-                    ObjectNode response=makeEmptyResponse(messageID, true);
-                    ArrayNode content=(ArrayNode)response.get("result").get("content");
+                for(int i=0;i<errors.size();i++)
+                    content.add(makeContent(errors.get(i)));
 
-                    for(int i=0;i<errors.size();i++)
-                        content.add(makeContent(errors.get(i)));
+                sendResponse(exchange, 200, response);
+                return;
 
-                    sendResponse(exchange, 200, response);
-                    return;
-
-                }//if closing
-
-            }//if closing
+            }//if closing            
             
 
             //Prepare the params, it any argument is at all provided
@@ -237,7 +243,7 @@ class ToolsCallProcessor {
         contentNode.put("type", "text");
         if(data==null)contentNode.put("text", "No response is available");
         else if(data instanceof String)contentNode.put("text", (String)data);
-        //First write produces JSON String, next one converts to escaped string
+        //Write the JSON string directly, no need to escape. When the response finally
         else contentNode.put("text", mapper.writeValueAsString(data));
 
         return contentNode;

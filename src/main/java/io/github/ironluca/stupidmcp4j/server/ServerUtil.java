@@ -64,7 +64,7 @@ class ServerUtil {
         }//if closing
         else{
 
-            exchange.sendResponseHeaders(statusCode, 0);
+            exchange.sendResponseHeaders(statusCode, -1);
 
         }//else closing
 
@@ -72,7 +72,7 @@ class ServerUtil {
 
     static final void sendHTTPError(HttpExchange exchange, int statusCode) throws IOException {
 
-        exchange.sendResponseHeaders(statusCode, 0);
+        exchange.sendResponseHeaders(statusCode, -1);
 
     }//sendResponse closing    
 

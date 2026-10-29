@@ -16,6 +16,54 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+/**
+ * This class processes server/discover method of MCP.
+ * 
+ * Request
+ * <pre>
+ * {@code {
+    "jsonrpc": "2.0",
+    "id": "discover-1",
+    "method": "server/discover",
+    "params": {
+        "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientInfo": {
+            "name": "mcp-client",
+            "version": "1.0.0"
+        },
+        "io.modelcontextprotocol/clientCapabilities": {}
+        }
+    }
+    }}
+ * </pre>
+    Response
+ * <pre>
+    {@code {
+    "jsonrpc": "2.0",
+    "id": "discover-1",
+    "result": {
+        "supportedVersions": [
+        "2026-07-28",
+        "2024-11-05"
+        ],
+        "capabilities": {
+        "tools": {
+            "listChanged": false
+        }
+        },
+        "_meta": {
+        "io.modelcontextprotocol/serverInfo": {
+            "name": "stupidMCP4j",
+            "version": "1.0.0"
+        }
+        },
+        "instructions": "stupidMCP4j lightweight tool server."
+    }
+    }}
+ * </pre>
+ * @see #process(JsonNode, HttpExchange, JsonNode)
+ */
 class ServerDiscoverProcessor {
 
     void process(JsonNode messageID, HttpExchange exchange, JsonNode bodyNode)throws IOException{
@@ -63,6 +111,8 @@ class ServerDiscoverProcessor {
         _meta.set("io.modelcontextprotocol/serverInfo", serverInfo);
         serverInfo.put("name", serverName);
         serverInfo.put("version", serverVersion);
+
+        result.put("instructions", "Lightweight tool server.");
 
         sendResponse(exchange, 200, response);
     

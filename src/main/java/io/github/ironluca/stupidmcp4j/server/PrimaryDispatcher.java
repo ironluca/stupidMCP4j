@@ -16,7 +16,9 @@ import tools.jackson.databind.node.NullNode;
 
 class PrimaryDispatcher {
 
-    ServerDiscoverProcessor serverDiscover=new ServerDiscoverProcessor();
+    private ServerDiscoverProcessor serverDiscover=new ServerDiscoverProcessor();
+    private InitializeProcessor initialize=new InitializeProcessor();
+    private NotificationsInitializedProcessor notificationsInitialized=new NotificationsInitializedProcessor();
 
     void dispatch(HttpExchange exchange, String requestBody) throws IOException{
         
@@ -51,14 +53,6 @@ class PrimaryDispatcher {
 
         }//if closing
 
-        if(id==null){
-            
-            error=makeError(id, -32600, "Id not provided");
-            sendResponse(exchange, 400, error);
-            return;
-        
-        }//if closing
-
         if(method==null || method.isBlank()){
             
             error=makeError(id, -32600, "Method not provided");
@@ -66,6 +60,15 @@ class PrimaryDispatcher {
             return;
         
         }//if closing
+
+        //Only MCP 2024-11-05 notifications/initialized method can be accepted without id
+        if(id==null && !method.equals("notifications/initialized")){
+            
+            error=makeError(id, -32600, "Id not provided");
+            sendResponse(exchange, 400, error);
+            return;
+        
+        }//if closing        
 
         if(!version.equals(jsonRPCSupportedVersion)){
             
@@ -80,8 +83,8 @@ class PrimaryDispatcher {
             switch (method) {
 
                 case "server/discover":{serverDiscover.process(id,exchange, bodyNode); break;}
-                case "initialize":break;
-                case "notifications/initialized":break;
+                case "initialize":{initialize.process(id, exchange, bodyNode); break;}
+                case "notifications/initialized":{notificationsInitialized.process(id, exchange, bodyNode); break;}
                 case "tools/list":break;
                 case "tools/call":break;
                 case "ping":break;

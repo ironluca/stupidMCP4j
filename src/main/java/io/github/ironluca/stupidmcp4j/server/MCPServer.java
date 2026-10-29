@@ -108,7 +108,7 @@ public class MCPServer {
         
         try{
 
-            HttpServer server = HttpServer.create();
+            server = HttpServer.create();
             server.bind(new InetSocketAddress(host, port), 128);
             server.setExecutor(executor);
             server.createContext("/mcp", new MCPHttpHandler());

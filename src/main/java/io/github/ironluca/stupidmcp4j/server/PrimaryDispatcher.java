@@ -21,6 +21,7 @@ class PrimaryDispatcher {
     private NotificationsInitializedProcessor notificationsInitialized=new NotificationsInitializedProcessor();
     private ToolsListProcessor toolsList=new ToolsListProcessor();
     private ToolsCallProcessor toolsCall=new ToolsCallProcessor();
+    private PingProcessor ping=new PingProcessor();
 
     void dispatch(HttpExchange exchange, String requestBody) throws IOException{
         
@@ -89,7 +90,7 @@ class PrimaryDispatcher {
                 case "notifications/initialized":{notificationsInitialized.process(id, exchange, bodyNode); break;}
                 case "tools/list":{toolsList.process(id, exchange, bodyNode); break;}
                 case "tools/call":{toolsCall.process(id, exchange, bodyNode); break;}
-                case "ping":break;
+                case "ping":{ping.process(id, exchange, bodyNode); break;}
 
                 default:{makeError(id, -32601, "Method not supported");sendResponse(exchange, 400, error); break;}
                     

@@ -7,8 +7,8 @@ if [ -z "$JAVA_HOME" ]; then
     exit 1
 fi
 
-if [ -z "$STUPIDMCP_HOME" ]; then
-    echo "ERROR: STUPIDMCP_HOME is not set. Please export STUPIDMCP_HOME=/path/to/stupidMCP4j" >&2
+if [ -z "$MCP_HOME" ]; then
+    echo "ERROR: MCP_HOME is not set. Please export MCP_HOME=/path/to/stupidMCP4j" >&2
     exit 1
 fi
 
@@ -19,10 +19,10 @@ if [ ! -x "$JAVACMD" ]; then
     exit 1
 fi
 
-# Build classpath using STUPIDMCP_HOME
-CP="$STUPIDMCP_HOME/lib/*:$STUPIDMCP_HOME/plugin"
+# Build classpath using MCP_HOME
+CP="$MCP_HOME/lib/*:$MCP_HOME/tools/*"
 
-echo "Starting stupidMCP4j (Home: $STUPIDMCP_HOME)..."
+echo "Starting stupidMCP4j (Home: $MCP_HOME)..."
 exec "$JAVACMD" \
     -cp "$CP" \
-    io.github.ironluca.stupidmcp4j.StupidMCP "$@"
+    io.github.ironluca.stupidmcp4j.server.MCPServer "$@"

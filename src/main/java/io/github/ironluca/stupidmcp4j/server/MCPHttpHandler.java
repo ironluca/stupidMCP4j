@@ -70,7 +70,7 @@ class MCPHttpHandler implements HttpHandler {
             }catch(IOException ioe){
 
                 //Make server error
-                sendResponse(exchange, 500, makeError(NullNode.instance, 500, "Internal server error"));
+                sendResponse(exchange, 500, makeError(NullNode.instance, -32603, "Internal server error"));
                 return;
 
             }//catch closing
@@ -78,7 +78,9 @@ class MCPHttpHandler implements HttpHandler {
             // 4. Process the request.
             dispatcher.dispatch(exchange, requestBody);
 
-        }finally {
+        }catch(IOException ioe){throw ioe;}
+         catch(Exception e){sendHTTPError(exchange, 500);}
+         finally {
 
             // 5. Release the exchange resources.
             exchange.close();

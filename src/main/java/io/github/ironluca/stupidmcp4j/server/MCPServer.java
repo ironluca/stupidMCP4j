@@ -56,8 +56,10 @@ public class MCPServer {
     private void start(){
 
         //TODO - Uncomment after testing
-        //String stupidmcpHomeStr=System.getenv(envStupidmcpHome);
+        //String mcphome=System.getenv(envStupidmcpHome);
 
+        System.out.println("##### stupidMCP4j #####");
+        System.out.println("## Retrieving environment variables ...");
         //TODO - Remove this after testing
         String mcphome="/home/sanjay-d/workspaces/git-workspace/stupidMCP4j";
         if(mcphome==null || mcphome.isBlank()){
@@ -67,7 +69,10 @@ public class MCPServer {
             System.exit(1);
 
         }//if closing
+        System.out.println("Done ...");
 
+
+        System.out.println("## Checking configuration files ...  ");
         //Get the relevant paths of the directory and files.
         serverConfPath=Paths.get(mcphome, confDir, serverConf);
         toolsConfPath=Paths.get(mcphome, confDir, toolsConf);
@@ -80,7 +85,10 @@ public class MCPServer {
             System.exit(1);
 
         }//if closing
+        System.out.println("Done ...");
 
+
+        System.out.println("## Iniializing connection aspects ...  ");
         //Initialize the host and port of the server, if a configuration is provided, otherwise default to the 
         //default values for these
         if(!Files.exists(serverConfPath)){
@@ -90,8 +98,10 @@ public class MCPServer {
 
         }//if closing
         else initHostPort();
+        System.out.println("Done ...");
 
 
+        System.out.println("## Iniializing tool registry ...  ");
         //Initialize the tools
         try{
 
@@ -105,8 +115,10 @@ public class MCPServer {
             System.exit(1);
         
         }//catch closing
+        System.out.println("Done ...");
 
 
+        System.out.println("## Starting daemon ...  ");
         //Initialize and start the server
         //Assign an executor so requests run concurrently
         int corePoolSize = Runtime.getRuntime().availableProcessors() * 2;
@@ -126,10 +138,10 @@ public class MCPServer {
             server.createContext("/mcp", new MCPHttpHandler());
             server.start();
 
-        }catch(BindException be){System.out.println("The port "+port+" is in use, cannot bind.");}
-         catch(IOException ioe){System.out.println("Encountered error during server initialization");ioe.printStackTrace();}
+        }catch(BindException be){System.out.println("The port "+port+" is in use, cannot bind."); System.exit(1);}
+         catch(IOException ioe){System.out.println("Encountered error during server initialization");System.exit(1);}
 
-        System.out.println("Server Started");
+        System.out.println("## Server Started :: Listening on http://"+host+":"+port+"/mcp for incoming requests");
 
     }//start closing
 

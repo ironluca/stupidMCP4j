@@ -1,0 +1,51 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 
+                              https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+
+    <id>bin</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <!-- Enforces the root directory name inside the zip -->
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <!-- Use ${project.artifactId}-${project.version} or hardcode to stupidMCP4j-1.0.0 -->
+    <baseDirectory>${project.artifactId}-${project.version}</baseDirectory>
+
+    <!-- Collects the project artifact JAR and all runtime dependencies into lib/ -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+
+    <!-- Copies bin/ and conf/ directories from project root -->
+    <fileSets>
+        <!-- bin folder with executable permissions for shell scripts -->
+        <fileSet>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <!-- conf folder -->
+        <fileSet>
+            <directory>conf</directory>
+            <outputDirectory>conf</outputDirectory>
+            <fileMode>0644</fileMode>
+        </fileSet>
+    </fileSets>
+
+    <!-- Copies README.md to the root directory inside the zip -->
+    <files>
+        <file>
+            <source>README.md</source>
+            <outputDirectory></outputDirectory>
+            <destName>README.md</destName>
+        </file>
+    </files>
+
+</assembly>

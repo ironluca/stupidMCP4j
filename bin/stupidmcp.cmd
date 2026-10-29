@@ -7,8 +7,8 @@ if "%JAVA_HOME%"=="" (
     exit /b 1
 )
 
-if "%STUPIDMCP_HOME%"=="" (
-    echo ERROR: STUPIDMCP_HOME is not set. Please set STUPIDMCP_HOME=C:\path\to\stupidMCP4j >&2
+if "%MCP_HOME%"=="" (
+    echo ERROR: MCP_HOME is not set. Please set MCP_HOME=C:\path\to\stupidMCP4j >&2
     exit /b 1
 )
 
@@ -19,10 +19,11 @@ if not exist "%JAVACMD%" (
     exit /b 1
 )
 
-rem Build classpath using STUPIDMCP_HOME (Windows uses semicolons)
-set "CP=%STUPIDMCP_HOME%\lib\*;%STUPIDMCP_HOME%\plugin"
+rem Build classpath using MCP_HOME (Windows uses semicolons)
+set "CP=%MCP_HOME%\lib\*;%MCP_HOME%\tools\*"
 
-echo Starting stupidMCP4j (Home: %STUPIDMCP_HOME%)...
-"%JAVACMD%" -cp "%CP%" io.github.ironluca.stupidmcp4j.StupidMCP %*
+echo Starting stupidMCP4j (Home: %MCP_HOME%)...
+"%JAVACMD%" -cp "%CP%" io.github.ironluca.stupidmcp4j.server.MCPServer %*
 
-endlocal
+set "EXIT_CODE=%ERRORLEVEL%"
+endlocal & exit /b %EXIT_CODE%

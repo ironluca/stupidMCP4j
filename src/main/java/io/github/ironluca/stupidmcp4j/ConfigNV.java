@@ -20,7 +20,7 @@ import java.util.List;
 public interface ConfigNV {
 
     /** The environment variable that contains the stupid MCP home. The path to the installation directory. */
-    public static final String envStupidmcpHome="STUPIDMCP_HOME";
+    public static final String envStupidmcpHome="MCP_HOME";
 
     public static final String confDir="conf";
     public static final String serverConf="server.json";

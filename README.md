@@ -119,6 +119,10 @@ Windows
 ```cmd
 stupidmcp.cmd
 ```
+
+### Step 4: Stopping the Server
+To stop the server `Ctl+c` is sufficient.
+
 ---
 
 ### Step 4: Verify with Ping
@@ -238,7 +242,7 @@ Register your tools and publish their JSON Schema definitions in `conf/tools.jso
 | `title` | String | Human-readable display label. |
 | `description` | String | Explains the tool's purpose and usage instructions to LLMs. |
 | `implementation`| String | Fully qualified class name to load and instantiate dynamically. |
-| `roles` | Array | Role-based access control list (leave empty `[]` for unrestricted access). **Not supported yet, givening or ammiting has no consequence.** |
+| `roles` | Array | Role-based access control list (leave empty `[]` for unrestricted access). **Not supported yet, giving or ommiting has no consequence.** |
 | `inputSchema` | Object | Draft-7 compliant JSON Schema validating caller arguments. |
 
 ---
@@ -258,3 +262,66 @@ To deploy custom tools to `stupidMCP4j`:
        └── third-party-dependency.jar
    ```
 3. Restart the server using `bin/stupidmcp.sh` (or `bin\stupidmcp.cmd` on Windows)[cite: 2]. All JARs placed in `tools/` are dynamically included in the server classpath at startup[cite: 2].
+
+---
+
+## Bootstrapping the Server
+
+Configuring and starting `stupidMCP4j` is straightforward and managed through a single configuration file.
+
+---
+
+### Configuration: `conf/server.json`
+
+Server network binding is defined in `conf/server.json`[cite: 4]:
+
+```json
+{
+  "host": "127.0.0.1",
+  "port": 8008
+}
+```
+
+* **`host`**: The IP interface to bind (defaults to `127.0.0.1`)[cite: 4].
+* **`port`**: The port to listen on for incoming HTTP JSON-RPC connections (e.g., `8008`)[cite: 4].
+
+---
+
+### Security & Reverse Proxy Recommendation
+
+`stupidMCP4j` intentionally remains minimal and lightweight: it does not include native SSL/TLS termination or HTTP authentication layers. 
+
+> **Production Recommendation:**  
+> Keep the server bound to `127.0.0.1` / `localhost` and place a battle-tested reverse proxy—such as **NGINX**, **Apache Tomcat**, or **Caddy**—in front of it.
+
+The reverse proxy handles:
+* **HTTPS / TLS Termination** to secure transport.
+* **Authentication & Authorization** (API Keys, Bearer Tokens, Basic Auth, mTLS).
+* **Rate Limiting & IP Filtering** to guard tool endpoints from abuse.
+
+#### Example: NGINX Reverse Proxy Configuration
+
+Below is a minimal NGINX configuration snippet to enforce HTTPS, check a static Bearer API token, and reverse proxy requests to `stupidMCP4j`:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name mcp.yourdomain.com;
+
+    ssl_certificate     /etc/ssl/certs/mcp.crt;
+    ssl_certificate_key /etc/ssl/private/mcp.key;
+
+    location /mcp {
+        # Simple Bearer Token authentication check
+        if ($http_authorization != "Bearer YOUR_SECRET_API_KEY") {
+            return 401 '{"jsonrpc":"2.0","error":{"code":-32000,"message":"Unauthorized"}}';
+        }
+
+        proxy_pass [http://127.0.0.1:8008](http://127.0.0.1:8008);
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```

@@ -1,5 +1,7 @@
 package io.github.ironluca.stupidmcp4j;
 
+import java.util.List;
+
 /*
  * Copyright 2026 The stupidMCP4j Contributors
  *
@@ -29,5 +31,14 @@ public interface ConfigNV {
 
     /** The default port, can be changed inconfiguration */
     public static final int defaultPort=8008;
+
+    /** The JSON-RPC supported version  */
+    public static String jsonRPCSupportedVersion="2.0";
+
+    /** The supported MCP versions */
+    public List<String> mcpSupportedVersions=List.of("2024-11-05","2026-07-28");
+
+    public static final String serverName="stupidMCP4j";
+    public static final String serverVersion="1.0.0";
 
 }//interface closing

@@ -56,7 +56,10 @@ public class MCPServer {
 
     private void start(){
 
+        //TODO - Uncomment after testing
         //String stupidmcpHomeStr=System.getenv(envStupidmcpHome);
+
+        //TODO - Remove this after testing
         String mcphome="/home/sanjay-d/workspaces/git-workspace/stupidMCP4j";
         if(mcphome==null || mcphome.isBlank()){
 
@@ -138,7 +141,11 @@ public class MCPServer {
 
     }//initHostPort closing
 
-    private void stop(){}
+    private void stop(){
+
+        server.stop(2);
+
+    }//close closing
 
     public static void main(String[] args) throws Exception {
 

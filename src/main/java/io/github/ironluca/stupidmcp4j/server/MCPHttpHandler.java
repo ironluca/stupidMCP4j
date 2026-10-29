@@ -1,12 +1,16 @@
 package io.github.ironluca.stupidmcp4j.server;
 
+import static io.github.ironluca.stupidmcp4j.server.ServerUtil.makeError;
+import static io.github.ironluca.stupidmcp4j.server.ServerUtil.sendHTTPError;
+import static io.github.ironluca.stupidmcp4j.server.ServerUtil.sendResponse;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import tools.jackson.databind.node.NullNode;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 /*
@@ -26,68 +30,62 @@ import java.nio.charset.StandardCharsets;
  */
 class MCPHttpHandler implements HttpHandler {
 
+    //This should be one per class
+    private static final PrimaryDispatcher dispatcher=new PrimaryDispatcher();
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
         try {
+
             // 1. Inspect the HTTP method.
             String method = exchange.getRequestMethod();
 
+            //We only support POST
             if (!"POST".equalsIgnoreCase(method)) {
+
+                //Method Not Allowed
                 exchange.getResponseHeaders().set("Allow", "POST");
-                sendResponse(exchange, 405, "Method Not Allowed");
+                sendHTTPError(exchange, 405);
                 return;
-            }
 
-            // 2. Inspect request headers.
-            String contentType =
-                    exchange.getRequestHeaders().getFirst("Content-Type");
+            }//if closing
 
-            if (contentType == null ||
-                    !contentType.toLowerCase().startsWith("application/json")) {
-                sendResponse(exchange, 415, "Unsupported Media Type");
+            // 2. Inspect request Conent-type headers.
+            String contentType =exchange.getRequestHeaders().getFirst("Content-Type");
+            if (contentType == null || !contentType.toLowerCase().startsWith("application/json")) {
+
+                //Unsupported Media Type
+                sendHTTPError(exchange, 415);
                 return;
-            }
+
+            }//if closing
 
             // 3. Read the request body.
-            String requestBody;
-
+            String requestBody=null;
             try (InputStream input = exchange.getRequestBody()) {
-                requestBody = new String(
-                        input.readAllBytes(),
-                        StandardCharsets.UTF_8);
-            }
+
+                requestBody = new String(input.readAllBytes(),StandardCharsets.UTF_8);
+
+            }catch(IOException ioe){
+
+                //Make server error
+                sendResponse(exchange, 500, makeError(NullNode.instance, 500, "Internal server error"));
+                return;
+
+            }//catch closing
 
             // 4. Process the request.
-            // Replace this placeholder with your JSON-RPC/MCP dispatcher.
-            String responseBody =
-                    "{\"jsonrpc\":\"2.0\",\"result\":{},\"id\":1}";
+            dispatcher.dispatch(exchange, requestBody);
 
-            // 5. Send the response.
-            exchange.getResponseHeaders().set(
-                    "Content-Type", "application/json; charset=utf-8");
+        }finally {
 
-            sendResponse(exchange, 200, responseBody);
-
-        } finally {
-            // 6. Release the exchange resources.
+            // 5. Release the exchange resources.
             exchange.close();
-        }
-    }
 
-    private void sendResponse(
-            HttpExchange exchange,
-            int statusCode,
-            String responseBody) throws IOException {
+        }//finally closing
 
-        byte[] responseBytes =
-                responseBody.getBytes(StandardCharsets.UTF_8);
+    }//handle closing
 
-        exchange.sendResponseHeaders(statusCode, responseBytes.length);
-
-        try (OutputStream output = exchange.getResponseBody()) {
-            output.write(responseBytes);
-        }
-    }
-}
+}//class closing
 

@@ -15,7 +15,7 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 
 * **Zero Framework Baggage:** Runs on standard JDK 11 or 17 LTS.
 * **HTTP Only:** No messy STDIO stream leaks; runs as a clean, headless microservice or Docker sidecar.
-* **Predictable Command Pattern:** One single interface: `Object execute(String action, Map<String, Object> args)`.
+* **Predictable Command Pattern:** One single interface: `Object execute(Map<String, Object> args) throws Exception`.
 * **Config-Driven:** Configure tools, actions, and JSON schemas in a clean JSON configuration file.
 * **Instant Cold Starts:** Boots in under 100ms with negligible memory overhead (<30MB heap).
 
@@ -325,3 +325,71 @@ server {
     }
 }
 ```
+---
+
+## Auxiliary Tool Configuration (`aux.properties`)
+
+Tools often need access to environmental settings, database connection URLs, API keys, or custom configuration flags without hardcoding them into Java source files.
+
+`stupidMCP4j` provides a global configuration properties file located at `aux/aux.properties` (or included on the server's root classpath). Any custom tool can access these properties at runtime via the standard Java `ClassLoader`.
+
+---
+
+### Reading Configuration Inside a Tool
+
+Inside your tool's `execute` method (or a helper method), load the configuration stream directly using `getResourceAsStream`:
+
+```java
+package io.github.ironluca.stupidmcp4j.tools;
+
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Properties;
+
+public class ConfiguredTool {
+
+    public ConfiguredTool() {}
+
+    public Object execute(Map<String, Object> params) throws Exception {
+        Properties props = new Properties();
+
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("aux.properties")) {
+            if (in != null) {
+                props.load(in);
+            } else {
+                throw new IllegalStateException("aux.properties not found on classpath");
+            }
+        }
+
+        String apiEndpoint = props.getProperty("external.service.url", "[https://api.default.local](https://api.default.local)");
+        String timeoutMs = props.getProperty("external.service.timeout", "5000");
+
+        // Tool logic using loaded properties...
+        return "Connected to " + apiEndpoint + " with timeout " + timeoutMs + "ms";
+    }
+}
+```
+
+---
+
+### File Format Example (`aux.properties`)
+
+You can define any arbitrary key-value pairs required by your deployed tools:
+
+```properties
+# Database or Service Connections
+external.service.url=[https://internal-api.enterprise.local/v1](https://internal-api.enterprise.local/v1)
+external.service.timeout=3000
+
+# Feature Flags
+feature.enable_debug_logging=true
+max.batch.size=250
+```
+
+---
+
+### Best Practices
+
+* **Cache When Appropriate:** Since `aux.properties` remains static during runtime, load and parse it once into a static or instance field rather than reading the stream on every tool call.
+* **Fallback Defaults:** Use `props.getProperty(key, defaultValue)` to supply resilient defaults when specific keys are not declared.
+* **Separation of Concerns:** Keep server binding settings in `conf/server.json` and tool schemas in `conf/tools.json`[cite: 3, 4]; reserve `aux.properties` purely for business logic configuration needed by your tools.

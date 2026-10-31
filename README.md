@@ -23,7 +23,7 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 * **HTTP Only:** No messy STDIO stream leaks; runs as a clean, headless microservice or Docker sidecar.
 * **Predictable Command Pattern:** One single interface: `Object execute(Map<String, Object> args) throws Exception`.
 * **Config-Driven:** Configure tools, actions, and JSON schemas in a clean JSON configuration file.
-* **Instant Cold Starts:** Boots in under 100ms with negligible memory overhead (<30MB heap).
+* **Instant Cold Starts:** Boots in fast with negligible memory overhead (<30MB heap).
 
 > **MCP Compatibility:** stupidMCP4j implements the mandatory (MUST) requirements of MCP 2026-07-28 for its supported functionality: `server/discover`, `tools/list`, and `tools/call`.
 > Optional capabilities and transport requirements outside this scope are not implemented. Full MCP 2026-07-28 feature coverage (with optional features) is not claimed.
@@ -95,11 +95,11 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 ```
 
 1. **`server/discover`**: Responds with response as per 2026-07-28 standard.
-2. **`initialize`**: Responds with standard MCP server capabilities as per 2024-11-05 standard.
-3. **`notifications/initialized`**: Responds as per 2024-11-05 standard.
+2. **`initialize`**: Legacy handshake, answered only so older clients can negotiate. The response always reports `protocolVersion` 2026-07-28, whatever the client requested; clients that don't support it should disconnect. 2026-07-28 clients don't send this method.
+3. **`notifications/initialized`**: Best-effort compatibility for older clients that still send them. MCP 2024-11-05 is not a supported version; these are answered so such clients can proceed, with no guarantee of full conformance with that revision.
 4. **`tools/list`**: Returns the list of available actions and schemas defined in your configuration.
 5. **`tools/call`**: Dispatches the action to your singleton handler and returns standard MCP `CallToolResult` JSON.
-6. **`ping`**: Responds as per 2026-07-28 standard.
+6. **`ping`**: Responds as per 2024-11-05 standard (for client who issue it, only supported as best-effort).
 
 ---
 

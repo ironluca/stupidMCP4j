@@ -109,7 +109,7 @@ class InitializeProcessor {
         ObjectNode result=mapper.createObjectNode();
         response.set("result", result);
         result.put("resultType", "complete");
-        result.set("protocolVersion", clientProtocolVersionNode);
+        result.put("protocolVersion", mcpVersion);
 
         ObjectNode capabilities=mapper.createObjectNode();
         result.set("capabilities", capabilities);

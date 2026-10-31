@@ -6,6 +6,7 @@ import static io.github.ironluca.stupidmcp4j.server.ServerUtil.mapper;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.sendResponse;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -214,6 +215,14 @@ class ToolsCallProcessor extends Abstract2026Processor{
                 return;
 
             }catch(Exception e){
+
+                //Tool exceptions arrive wrapped in InvocationTargetException, unwrap to get the real one
+                Throwable cause=(e instanceof InvocationTargetException && e.getCause()!=null)?e.getCause():e;
+
+                String msg=cause.getMessage();
+
+                //Some exceptions (e.g. NullPointerException) carry no message, fall back to the class name
+                if(msg==null || msg.isBlank())msg=cause.getClass().getSimpleName();
 
                 //If there are any exceptions, send the message of the exception
                 ObjectNode response=makeEmptyResponse(messageID, true);

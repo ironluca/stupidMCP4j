@@ -27,7 +27,7 @@ class NotificationsInitializedProcessor {
 
     void process(JsonNode messageID, HttpExchange exchange, JsonNode bodyNode)throws IOException{
 
-        sendResponse(exchange, 204, null);
+        sendResponse(exchange, 202, null);
 
     }//process closing
 

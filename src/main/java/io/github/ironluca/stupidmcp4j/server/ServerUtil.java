@@ -62,9 +62,9 @@ class ServerUtil {
         error.set("id", messageID);
 
         ObjectNode errorNode=mapper.createObjectNode();
+        errorNode.put("code", errorCode);
+        errorNode.put("message", message);
         error.set("error", errorNode);
-        error.put("code", errorCode);
-        error.put("message", message);
 
         return error;
 

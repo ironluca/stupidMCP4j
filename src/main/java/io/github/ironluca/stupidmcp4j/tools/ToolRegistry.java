@@ -7,6 +7,7 @@ import static io.github.ironluca.stupidmcp4j.ConfigNV.toolsConf;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -110,34 +111,79 @@ public class ToolRegistry {
                 if(toolDef.get("inputSchema").isNull())
                     throw new RuntimeException("The tool does not define inputSchema, which is mandatory.\n "+toolDef.toPrettyString());
 
+                
+
                 try{
 
                     String toolName=toolDef.get("name").asString();
 
+                    //Check if there is already a tool with the same name registered, duplicate tool names are not allowed
+                    if(toolMethodMap.containsKey(toolName))
+                        throw new RuntimeException("Duplicate tool name detected. Tool names must be unique\n "+toolDef.toPrettyString());
+
+                    //Load the class
                     String implClassName=toolDef.get("implementation").asString();
                     Class<?> clazz=Class.forName(implClassName);
 
-                    Constructor<Object> constructor=(Constructor<Object>)clazz.getDeclaredConstructor();
-                    if(constructor==null)
-                        throw new RuntimeException("The implementation class does not have a default constructor, which is mandatory.\n "+toolDef.toPrettyString());
+                    //Check that the class is public 
+                    if(!Modifier.isPublic(clazz.getModifiers()))
+                        throw new RuntimeException("The tool class must be public.\n "+toolDef.toPrettyString());
 
-                    Method execMethod=clazz.getDeclaredMethod("execute", Map.class);
-                    if(execMethod==null)
+
+                    //Get the constructor
+                    Constructor<Object> constructor=null;
+
+                    try{
+
+                        constructor=(Constructor<Object>)clazz.getDeclaredConstructor();
+                        
+                    }catch(NoSuchMethodException e){
+
+                        throw new RuntimeException("The implementation class does not have a no-arg default constructor, which is mandatory.\n "+toolDef.toPrettyString());
+
+                    }//catch closing
+
+                    //Check if the default constructor is public
+                    if(!Modifier.isPublic(constructor.getModifiers()))
+                        throw new RuntimeException("The default constructor must be public.\n "+toolDef.toPrettyString());
+
+                    //Get the method
+                    Method execMethod=null;
+                    try{
+
+                        execMethod=clazz.getDeclaredMethod("execute", Map.class);
+                        
+                    }catch(NoSuchMethodException e){
+
                         throw new RuntimeException("The implementation class does not implement the 'public Object execute(Map<String, Object> params) throws Exception' method, which is mandatory.\n "+toolDef.toPrettyString());
 
-                    Object toolObject=constructor.newInstance();
+                    }//catch closing
 
-                    toolMethodMap.put(toolName, execMethod);
-                    toolObjectMap.put(execMethod, toolObject);
 
+                    //Check if the exec method is public is public
+                    if(!Modifier.isPublic(execMethod.getModifiers()))
+                        throw new RuntimeException("The execution method must be public.\n "+toolDef.toPrettyString());
+
+
+                    //Create the tool definition
                     ToolDefinition toolDefinitionObject=mapper.readValue(toolDef.toString(), ToolDefinition.class);
-                    toolDefs.add(toolDefinitionObject);
+                    toolDefs.add(toolDefinitionObject);    
+                    
 
-                }catch(ClassNotFoundException e){
+                    //Register the tool name and exec method
+                    toolMethodMap.put(toolName, execMethod);
 
-                    throw new RuntimeException("The implementation class does not exist.\n "+toolDef.toPrettyString());
-                }
-                catch(RuntimeException r){throw r;}
+
+                    //If the tool object for the method already exists, don't put it in the map again.
+                    if(!toolObjectMap.containsKey(execMethod))
+                        toolObjectMap.put(execMethod, constructor.newInstance());
+
+                }catch(RuntimeException r){throw r;}
+                catch(ClassNotFoundException | LinkageError e){
+
+                    throw new RuntimeException("The implementation class could not be loaded ("+e+"). Check the class name and that the tool JAR and its dependencies are in tools/.\n "+toolDef.toPrettyString());
+
+                }//catch closing
                 catch(Exception e){throw new RuntimeException("Could not load tool. Check it it is an abstract class or access controlled.\n "+toolDef.toPrettyString());}
 
             }//for closing

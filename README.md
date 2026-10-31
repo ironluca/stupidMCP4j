@@ -19,6 +19,9 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 * **Config-Driven:** Configure tools, actions, and JSON schemas in a clean JSON configuration file.
 * **Instant Cold Starts:** Boots in under 100ms with negligible memory overhead (<30MB heap).
 
+> **MCP Compatibility:** stupidMCP4j implements the mandatory (MUST) requirements of MCP 2026-07-28 for its supported functionality: `server/discover`, `tools/list`, and `tools/call`.
+> Optional capabilities and transport requirements outside this scope are not implemented. Full MCP 2026-07-28 feature coverage (with optional features) is not claimed.
+
 ---
 
 ## How It Works

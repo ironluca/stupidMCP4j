@@ -53,7 +53,7 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 * **Scenario:** You need to expose internal enterprise capabilities to AI agents in restricted, on-premises, or air-gapped environments. Deploying a full AI application framework merely to host a collection of MCP tools introduces unnecessary dependencies, runtime overhead, and operational complexity.
 * **Why stupidMCP4j:** It provides a small, self-contained Java MCP server without requiring Spring, LangChain, reactive runtimes, or cloud services. Its minimal deployment footprint makes it practical to introduce MCP capabilities into tightly controlled enterprise environments without introducing an entire AI application stack.
 
-#### 4. Controlled Enterprise Gateways Behind Reverse Proxies
+#### 5. Controlled Enterprise Gateways Behind Reverse Proxies
 * **Scenario:** Security teams require auditing, rate limiting, and credential checks before client applications (such as developer IDEs) access backend logic.
 * **Why stupidMCP4j:** Operating as a local HTTP daemon allows you to place battle-tested proxies like NGINX or Apache Tomcat in front of the server to enforce mTLS, API keys, Bearer tokens, and request auditing before any call reaches tool execution.
 

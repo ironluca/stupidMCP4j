@@ -1,7 +1,7 @@
 package io.github.ironluca.stupidmcp4j.server;
 
 import static io.github.ironluca.stupidmcp4j.ConfigNV.jsonRPCSupportedVersion;
-import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpSupportedVersions;
+import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpVersion;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.serverName;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.serverVersion;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.makeError;
@@ -84,6 +84,15 @@ class InitializeProcessor {
 
         }//if closing
 
+        if(!mcpVersion.equals(clientProtocolVersionNode.asString())){
+
+            error=makeError(messageID, -32022, "Unsupported protocol version");
+            sendResponse(exchange, 400, error);
+            return;
+
+        }//if closing
+
+        /*
         if(!mcpSupportedVersions.contains(clientProtocolVersionNode.asString())){
 
             error=makeError(messageID, -32022, "Unsupported protocol version");
@@ -91,6 +100,7 @@ class InitializeProcessor {
             return;
 
         }//if closing
+        */
 
         ObjectNode response=mapper.createObjectNode();
         response.put("jsonrpc", jsonRPCSupportedVersion);

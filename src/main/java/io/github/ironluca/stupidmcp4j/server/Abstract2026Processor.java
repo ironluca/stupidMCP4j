@@ -1,6 +1,6 @@
 package io.github.ironluca.stupidmcp4j.server;
 
-import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpSupportedVersions;
+import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpVersion;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.makeError;
 
 import tools.jackson.databind.JsonNode;
@@ -63,7 +63,7 @@ class Abstract2026Processor {
 
         }//if closing
 
-        if(!mcpSupportedVersions.contains(clientProtocolVersionNode.asString())){
+        if(!mcpVersion.equals(clientProtocolVersionNode.asString())){
 
             error=makeError(messageID, -32022, "Unsupported protocol version: "+clientProtocolVersionNode.asString());
             return error;

@@ -1,7 +1,7 @@
 package io.github.ironluca.stupidmcp4j.server;
 
 import static io.github.ironluca.stupidmcp4j.ConfigNV.jsonRPCSupportedVersion;
-import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpSupportedVersions;
+import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpVersion;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.serverName;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.serverVersion;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.mapper;
@@ -58,8 +58,7 @@ import tools.jackson.databind.node.ObjectNode;
     "id": "discover-1",
     "result": {
         "supportedVersions": [
-        "2026-07-28",
-        "2024-11-05"
+        "2026-07-28"
         ],
         "capabilities": {
         "tools": {
@@ -122,7 +121,7 @@ class ServerDiscoverProcessor extends Abstract2026Processor{
 
         ArrayNode supportedVersions=mapper.createArrayNode();
         result.set("supportedVersions", supportedVersions);
-        for(String v: mcpSupportedVersions)supportedVersions.add(v);
+        supportedVersions.add(mcpVersion);
 
         ObjectNode capabilities=mapper.createObjectNode();
         result.set("capabilities", capabilities);

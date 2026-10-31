@@ -37,7 +37,6 @@ public interface ConfigNV {
 
     /** The supported MCP versions */
     public String mcpVersion="2026-07-28";
-    public List<String> mcpSupportedVersions=List.of("2024-11-05",mcpVersion);
 
     public static final String serverName="stupidMCP4j";
     public static final String serverVersion="1.0.0";

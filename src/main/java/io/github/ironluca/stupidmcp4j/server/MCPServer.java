@@ -132,7 +132,7 @@ public class MCPServer {
             server = HttpServer.create();
             server.bind(new InetSocketAddress(host, port), 128);
             server.setExecutor(executor);
-            server.createContext("/mcp", new MCPHttpHandler());
+            server.createContext("/mcp", new MCPHttpHandler(host, port));
             server.start();
 
         }catch(BindException be){System.out.println("The port "+port+" is in use, cannot bind."); System.exit(1);}

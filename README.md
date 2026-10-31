@@ -1,7 +1,13 @@
 # stupidMCP4j
 
-> **KISS (Keep It Simple, Stupid) Model Context Protocol Server for Java.**  
-> No Spring. No Project Reactor. No dynamic bytecode magic. Zero framework bloat.
+> **KISS (Keep It Simple, Stupid) Model Context Protocol Server for Java.**
+>A lightweight MCP server for Java. Expose new or existing Java functionality to AI agents without introducing an AI application framework.
+
+> No Spring. No Project Reactor. No dynamic bytecode magic. No frameworks to worry about.
+
+> `stupidMCP4j` is a deliberately minimal Java MCP server designed to expose new or existing Java code and infrastructure to AI agent runtimes without introducing heavyweight frameworks or requiring application rewrites.
+
+> Its philosophy is simple: deploy a JAR, configure your tools, and run. It prioritizes simplicity, low overhead, and ease of integration over implementing every capability of the MCP specification.
 
 `stupidMCP4j` is an ultra-lightweight, configuration-driven Model Context Protocol (MCP) server for Java 17+. It provides a bare-metal HTTP tool-execution server using standard Java primitives (`com.sun.net.httpserver`), standard JSON-RPC 2.0, and a single, predictable command interface.
 
@@ -13,7 +19,7 @@ Some of the official Java MCP libraries often pull in massive reactive dependenc
 
 If you just need an enterprise AI agent (Claude, Cursor, custom agents) to securely trigger queries or run actions against your backend systems without bringing in 200MB of dependencies, you shouldn't need a framework.
 
-* **Zero Framework Baggage:** Runs on standard JDK 11 or 17 LTS.
+* **Zero Framework Baggage:** Runs on standard JDK 17 LTS.
 * **HTTP Only:** No messy STDIO stream leaks; runs as a clean, headless microservice or Docker sidecar.
 * **Predictable Command Pattern:** One single interface: `Object execute(Map<String, Object> args) throws Exception`.
 * **Config-Driven:** Configure tools, actions, and JSON schemas in a clean JSON configuration file.
@@ -21,6 +27,49 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 
 > **MCP Compatibility:** stupidMCP4j implements the mandatory (MUST) requirements of MCP 2026-07-28 for its supported functionality: `server/discover`, `tools/list`, and `tools/call`.
 > Optional capabilities and transport requirements outside this scope are not implemented. Full MCP 2026-07-28 feature coverage (with optional features) is not claimed.
+
+
+## When to Use stupidMCP4j
+
+`stupidMCP4j` is purpose-built as minimal MCP `2026-07-28` server to bridge existing Java infrastructure with modern AI agent interfaces.
+
+---
+
+### Core Use Cases
+
+#### 1. Exposing Internal Java Logic to AI Without Rewrites
+* **Scenario:** You maintain battle-tested Java calculation engines, legacy database adapters, or proprietary parsers. You want AI agents to invoke these routines without rewriting them in TypeScript or Python.
+* **Why stupidMCP4j:** Instead of adding heavy reactive dependencies or refactoring an existing project to fit modern framework BOMs, compile your business logic into a standard JAR and drop it into `tools/`. Wire up the inputs in `conf/tools.json`, and your logic is instantly reachable via standard MCP.
+
+#### 2. Resource-Constrained Environments & Cloud Sidecars
+* **Scenario:** You are deploying tools as containerized sidecars in Kubernetes or serverless containers where memory overhead directly drives cloud cost.
+* **Why stupidMCP4j:** Standard enterprise frameworks can easily consume 250MB–512MB of heap and require several seconds to warm up. By relying strictly on JDK 17+ core libraries (`com.sun.net.httpserver`), `stupidMCP4j` boots fast with a baseline heap footprint below 30MB.
+
+#### 3. Adding AI Capabilities Without Changing Existing Applications
+* **Scenario:** You have stable, production Java applications that cannot be easily modified, rebuilt, or redeployed just to accommodate emerging AI integration requirements. You want to expose selected capabilities to AI agents without introducing another dependency into those applications.
+* **Why stupidMCP4j:** Run it as an independent service in `stupidMCP4j` alongside your existing infrastructure. It can connect to existing services, databases, or Java components and expose selected operations through MCP. Your production applications remain untouched, independently deployable, and free from MCP-specific dependencies.
+
+#### 4. Minimal MCP Infrastructure for On-Premises and Air-Gapped Environments
+* **Scenario:** You need to expose internal enterprise capabilities to AI agents in restricted, on-premises, or air-gapped environments. Deploying a full AI application framework merely to host a collection of MCP tools introduces unnecessary dependencies, runtime overhead, and operational complexity.
+* **Why stupidMCP4j:** It provides a small, self-contained Java MCP server without requiring Spring, LangChain, reactive runtimes, or cloud services. Its minimal deployment footprint makes it practical to introduce MCP capabilities into tightly controlled enterprise environments without introducing an entire AI application stack.
+
+#### 4. Controlled Enterprise Gateways Behind Reverse Proxies
+* **Scenario:** Security teams require auditing, rate limiting, and credential checks before client applications (such as developer IDEs) access backend logic.
+* **Why stupidMCP4j:** Operating as a local HTTP daemon allows you to place battle-tested proxies like NGINX or Apache Tomcat in front of the server to enforce mTLS, API keys, Bearer tokens, and request auditing before any call reaches tool execution.
+
+---
+
+### What stupidMCP4j Is Not
+
+`stupidMCP4j` is deliberately limited in scope. It is an MCP server, not an AI application framework or agent runtime. Do not expect it to:
+- **Build or orchestrate AI agents:** No agent loops, planning, reasoning, prompt management, or conversation orchestration.
+- **Manage LLMs:** No model hosting, model integration, or model lifecycle management.
+- **Provide AI memory or RAG:** No embeddings, vector databases, document retrieval, or conversational memory.
+- **Replace application frameworks:** No dependency injection, application lifecycle framework, or Spring ecosystem integration.
+- **Implement the entire MCP specification:** It implements the **mandatory requirements** for its supported MCP functionality, but does not attempt to implement every optional capability or transport.
+- **Support Streamable HTTP or SSE:** Communication uses its deliberately simple HTTP POST transport. SSE, server-initiated streaming, and streaming notifications are not supported and **are not planned**.
+- **Provide security infrastructure:** Authentication, authorization, TLS termination, rate limiting, and auditing are responsibilities of the surrounding deployment infrastructure.
+> **Its responsibility is simple:** expose configured Java tools through a lightweight, self-contained MCP server.
 
 ---
 

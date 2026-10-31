@@ -1,7 +1,5 @@
 package io.github.ironluca.stupidmcp4j;
 
-import java.util.List;
-
 /*
  * Copyright 2026 The stupidMCP4j Contributors
  *

@@ -4,7 +4,6 @@ import static io.github.ironluca.stupidmcp4j.ConfigNV.jsonRPCSupportedVersion;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpSupportedVersions;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.serverName;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.serverVersion;
-import static io.github.ironluca.stupidmcp4j.server.ServerUtil.makeError;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.mapper;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.sendResponse;
 
@@ -32,11 +31,11 @@ import tools.jackson.databind.node.ObjectNode;
  * limitations under the License.
  */
 /**
- * This class processes server/discover method of MCP.
- * 
+ * This class processes server/discover method of MCP version 2026-07-28.<br>
+ * <br>
  * Request
  * <pre>
- * {@code {
+ * {
     "jsonrpc": "2.0",
     "id": "discover-1",
     "method": "server/discover",
@@ -50,11 +49,11 @@ import tools.jackson.databind.node.ObjectNode;
         "io.modelcontextprotocol/clientCapabilities": {}
         }
     }
-    }}
+    }
  * </pre>
     Response
  * <pre>
-    {@code {
+    {
     "jsonrpc": "2.0",
     "id": "discover-1",
     "result": {
@@ -75,16 +74,19 @@ import tools.jackson.databind.node.ObjectNode;
         },
         "instructions": "stupidMCP4j lightweight tool server."
     }
-    }}
+    }
  * </pre>
  * @see #process(JsonNode, HttpExchange, JsonNode)
  */
-class ServerDiscoverProcessor {
+class ServerDiscoverProcessor extends Abstract2026Processor{
+
+    ServerDiscoverProcessor(){super();}
 
     void process(JsonNode messageID, HttpExchange exchange, JsonNode bodyNode)throws IOException{
 
         JsonNode error=null;
         
+        /*
         JsonNode clientProtocolVersionNode=bodyNode.at("/params/_meta/io.modelcontextprotocol~1protocolVersion");
         if(clientProtocolVersionNode.isMissingNode()){
 
@@ -101,6 +103,14 @@ class ServerDiscoverProcessor {
             return;
 
         }//if closing
+        */
+       error=super.evaluate_metaError(messageID, bodyNode);
+       if(error!=null){
+
+            sendResponse(exchange, 400, error);
+            return;
+
+       }//if closing
 
         ObjectNode response=mapper.createObjectNode();
         response.put("jsonrpc", jsonRPCSupportedVersion);

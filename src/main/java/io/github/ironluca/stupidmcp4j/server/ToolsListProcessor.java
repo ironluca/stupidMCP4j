@@ -29,62 +29,85 @@ import tools.jackson.databind.node.ObjectNode;
  * limitations under the License.
  */
 /**
- * {@code {
+ * This class processes tools/list method of MCP version 2026-07-28.<br>
+ * <br>
+ * Request
+ * <pre>
+ * {
     "jsonrpc": "2.0",
     "id": 2,
     "method": "tools/list",
-    "params": {}
-    }}
- * 
-{@code {
-  "jsonrpc": "2.0",
-  "id": 2,
-  "result": {
-    "tools": [
-      {
-        "name": "execute_query",
-        "description": "Runs a read-only SQL query",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "sql": {
-              "type": "string",
-              "description": "SQL statement"
-            }
-          },
-          "required": ["sql"]
+    "params": {
+      "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientCapabilities":{}
         }
       }
-    ]
-  }
-}}
+    }
+    </pre>
+    Response
+ *  <pre>
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": {
+        "tools": [
+          {
+            "name": "execute_query",
+            "description": "Runs a read-only SQL query",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "sql": {
+                  "type": "string",
+                  "description": "SQL statement"
+                }
+              },
+              "required": ["sql"]
+            }
+          }
+        ]
+      }
+    }
+    </pre>
  */
-public class ToolsListProcessor {
+public class ToolsListProcessor extends Abstract2026Processor{
 
     private ToolRegistry registry;
 
     ToolsListProcessor(){
 
-        try{
+      super();
 
-            registry=ToolRegistry.getToolRegistry();
+      try{
 
-        }catch(Exception e){e.printStackTrace();}
+          registry=ToolRegistry.getToolRegistry();
+
+      }catch(Exception e){e.printStackTrace();}
 
     }//constructor closing
 
     void process(JsonNode messageID, HttpExchange exchange, JsonNode bodyNode)throws IOException{
 
-        ObjectNode response=mapper.createObjectNode();
-        response.put("jsonrpc", jsonRPCSupportedVersion);
-        response.set("id", messageID);
+      JsonNode error=super.evaluate_metaError(messageID, bodyNode);
+      error=super.evaluate_metaError(messageID, bodyNode);
+      if(error!=null){
 
-        ObjectNode result=mapper.createObjectNode();
-        response.set("result", result);
-        result.put("resultType", "complete");
-        result.set("tools", mapper.convertValue(registry.getToolList(), ArrayNode.class));
+          sendResponse(exchange, 400, error);
+          return;
 
-        sendResponse(exchange, 200, response);
+      }//if closing
+
+      ObjectNode response=mapper.createObjectNode();
+      response.put("jsonrpc", jsonRPCSupportedVersion);
+      response.set("id", messageID);
+
+      ObjectNode result=mapper.createObjectNode();
+      response.set("result", result);
+      result.put("resultType", "complete");
+      result.set("tools", mapper.convertValue(registry.getToolList(), ArrayNode.class));
+
+      sendResponse(exchange, 200, response);
 
     }//process closing
 

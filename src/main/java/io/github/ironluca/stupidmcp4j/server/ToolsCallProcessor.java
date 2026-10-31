@@ -39,21 +39,27 @@ import tools.jackson.databind.node.ObjectNode;
  * limitations under the License.
  */
 /**
+ * This class processes server/discover method of MCP version 2026-07-28.<br>
+ * <br>
  * Request
  * <pre>
- * {@code {
+ * {
     "jsonrpc": "2.0",
     "id": "call-1",
     "method": "tools/call",
     "params": {
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientCapabilities":{}
+        }
         "name": "passthrough_tool",
         "arguments":{"message":"This should get returned back"}
     }
-    }}
+    }
     </pre>
  * Response
     <pre>
-    {@code {
+    {
     "jsonrpc": "2.0",
     "id": "call-1",
     "result": {
@@ -66,17 +72,19 @@ import tools.jackson.databind.node.ObjectNode;
         ],
         "isError": false
     }
-    }}
+    }
   </pre>
  * ToolsCallProcessor
  */
-class ToolsCallProcessor {
+class ToolsCallProcessor extends Abstract2026Processor{
 
     private ToolRegistry registry;
 
     private SchemaRegistry schemaFactory;
 
     ToolsCallProcessor(){
+
+        super();
 
         try{
 
@@ -93,6 +101,14 @@ class ToolsCallProcessor {
         JsonNode error=null;
 
         try{
+
+            error=super.evaluate_metaError(messageID, bodyNode);
+            if(error!=null){
+
+                sendResponse(exchange, 400, error);
+                return;
+
+            }//if closing
 
             JsonNode toolNameNode=bodyNode.at("/params/name");
             JsonNode argumentsNode=bodyNode.at("/params/arguments");

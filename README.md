@@ -280,7 +280,7 @@ Adding capabilities to `stupidMCP4j` does not require implementing vendor interf
 
 Any tool implementation must satisfy two requirements:
 
-1. **Default Constructor:** The class must be `public` and contain an accessible, no-argument default constructor.
+1. **Public Class & Public Default Constructor:** The class must be `public` and contain an accessible, no-argument `public` default constructor.
 2. **Execute Method:** The class must implement an `execute` method matching this exact signature:
    ```java
    public Object execute(Map<String, Object> params) throws Exception

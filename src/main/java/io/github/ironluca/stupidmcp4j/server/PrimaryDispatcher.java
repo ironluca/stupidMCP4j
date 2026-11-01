@@ -107,7 +107,7 @@ class PrimaryDispatcher {
                 case "tools/call":{toolsCall.process(id, exchange, bodyNode); break;}
                 case "ping":{ping.process(id, exchange, bodyNode); break;}
 
-                default:{makeError(id, -32601, "Method not supported");sendResponse(exchange, 400, error); break;}
+                default:{error=makeError(id, -32601, "Method "+method+" is not supported");sendResponse(exchange, 404, error); break;}
                     
             }//switch closing
 

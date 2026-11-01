@@ -153,8 +153,8 @@ public class MCPServer {
             try{
 
                 JsonNode config=mapper.readTree(serverConfPath.toFile());
-                if(config.has("host"))host=config.get("host").asString();
-                if(config.has("port"))port=config.get("port").asInt();
+                if(config.has("host") && !config.get("host").isNull())host=config.get("host").asString().toLowerCase();
+                if(config.has("port")&& !config.get("port").isNull())port=config.get("port").asInt();
 
             }catch(JacksonException je){System.out.println("Could not read configuration in conf/"+serverConf+". Check for syntax errors.");}
 

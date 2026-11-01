@@ -31,6 +31,8 @@ import java.util.Set;
  */
 class MCPHttpHandler implements HttpHandler {
 
+    private static final int MAX_REQ_LIMIT=1024*1024;//1 MB
+
     //This should be one per class
     private static final PrimaryDispatcher dispatcher=new PrimaryDispatcher();
     private static final Set<String> LOOPBACK_HOSTS = Set.of(
@@ -45,7 +47,7 @@ class MCPHttpHandler implements HttpHandler {
 
     MCPHttpHandler(String host, int port){
 
-        this.host=host;
+        if(host!=null)this.host=host.toLowerCase();
         this.port=port;
 
     }//constructor closing
@@ -81,21 +83,45 @@ class MCPHttpHandler implements HttpHandler {
             }//catch closing
             
 
-            // 2. Inspect request Conent-type headers.
+            // 2. Inspect request Conent-Type headers.
             String contentType =exchange.getRequestHeaders().getFirst("Content-Type");
-            if (contentType == null || !contentType.toLowerCase().startsWith("application/json")) {
+            if (contentType == null || contentType.isBlank()) {
 
                 //Unsupported Media Type
                 sendHTTPError(exchange, 415);
                 return;
 
             }//if closing
+            else{
 
-            // 3. Read the request body.
+                String mimeType = contentType.split(";")[0].trim().toLowerCase();
+                if (!"application/json".equals(mimeType)) {
+
+                    sendHTTPError(exchange, 415);
+                    return;
+
+                }//if closing
+
+            }//else closing
+
+            // 3. Read the request body. Limit it to 1MB
             String requestBody=null;
             try (InputStream input = exchange.getRequestBody()) {
 
-                requestBody = new String(input.readAllBytes(),StandardCharsets.UTF_8);
+                //requestBody = new String(input.readAllBytes(),StandardCharsets.UTF_8);
+
+                byte[] bytes=input.readNBytes(MAX_REQ_LIMIT+1);
+
+                if(bytes.length>MAX_REQ_LIMIT){
+
+                    //Payload Too Large
+                    exchange.getResponseHeaders().set("Connection", "close");
+                    sendHTTPError(exchange, 413);
+                    return;
+
+                }//if closing
+
+                requestBody=new String(bytes, StandardCharsets.UTF_8);
 
             }catch(IOException ioe){
 
@@ -145,7 +171,7 @@ class MCPHttpHandler implements HttpHandler {
      *
      * <h3>Defense Mechanisms Applied</h3>
      * <ul>
-     *   <li><b>Zero-Tolerance {@code Origin} Validation:</b> Standard desktop AI clients, CLI tools, and reverse
+     *   <li><b>Zero-Tolerance {@code Origin} Validation:</b> Standard non-browser clients, desktop AI clients, CLI tools, and reverse
      *       proxies (e.g., Claude Desktop, Cursor, NGINX, curl) do not provide an {@code Origin} header.
      *       Web browsers universally append an {@code Origin} header on cross-site/POST requests and prevent
      *       client-side scripts from omitting or modifying it. Any incoming request carrying an {@code Origin}

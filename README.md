@@ -73,6 +73,50 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 
 ---
 
+## Transport
+
+`stupidMCP4j` uses a **custom HTTP POST transport**.
+
+The official MCP specification (2026-07-28) defines only two standard transports:
+
+- **stdio** — newline-delimited JSON-RPC over standard streams
+- **Streamable HTTP** — HTTP POST with optional request-scoped SSE responses
+
+`stupidMCP4j` deliberately does **not** implement Streamable HTTP.  
+It provides a minimal, single-purpose alternative:
+
+- Client sends a single JSON-RPC request as the body of an HTTP POST
+- Server replies with a single JSON-RPC response (`Content-Type: application/json`)
+- No Server-Sent Events (SSE)
+- No dual `Accept` header requirements
+- No long-lived streams or `subscriptions/listen`
+
+This is a **custom transport**, which the MCP specification explicitly permits:
+
+> Clients and servers MAY implement additional custom transport mechanisms…  
+> The protocol is transport-agnostic…
+
+### Design rationale
+
+The goal of `stupidMCP4j` is to expose existing Java functionality to AI agents with the absolute minimum runtime and operational complexity.  
+A plain request/response HTTP POST model is sufficient for the supported methods (`server/discover`, `tools/list`, `tools/call`) and avoids the additional surface area of the full Streamable HTTP binding.
+
+### Header handling
+
+Because this is not Streamable HTTP, the transport-specific header requirements (`Mcp-Method`, `Mcp-Name`, strict `MCP-Protocol-Version` matching, etc.) are **not** enforced as mandatory. It does not mirror or validate `MCP-Protocol-Version`, `Mcp-Method` or `Mcp-Name`. All protocol metadata is read from the JSON-RPC body (`params._meta`), which is the single source of truth. Standard clients may send those headers; they are ignored.
+
+- The JSON-RPC body is treated as the source of truth.
+- Extraneous or vendor-specific headers are ignored.
+- Missing headers are accepted; the request is still processed.
+
+This keeps the server simple, compatible with a wide range of clients, and true to the KISS design.
+
+> **Security note:** because the headers are not verified against the body, do not
+> enforce authorization or routing policy on `Mcp-Method` / `Mcp-Name` in a proxy
+> in front of this server.
+
+---
+
 ## How It Works
 
 `stupidMCP4j` strips away the complexity of MCP into a classic Command Dispatcher model:
@@ -369,8 +413,8 @@ server {
             return 401 '{"jsonrpc":"2.0","error":{"code":-32000,"message":"Unauthorized"}}';
         }
 
-        proxy_pass [http://127.0.0.1:8008](http://127.0.0.1:8008);
-        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:8008;
+        proxy_set_header Host $proxy_host;   # the default; sends 127.0.0.1:8008
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;

@@ -160,7 +160,7 @@ public class ToolRegistry {
                     }//catch closing
 
 
-                    //Check if the exec method is public is public
+                    //Check if the exec method is public
                     if(!Modifier.isPublic(execMethod.getModifiers()))
                         throw new RuntimeException("The execution method must be public.\n "+toolDef.toPrettyString());
 

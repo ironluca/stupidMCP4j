@@ -170,9 +170,12 @@ public class MCPServer {
 
     public static void main(String[] args) throws Exception {
 
+        long startTime=System.currentTimeMillis();
+
         MCPServer mcp=new MCPServer();
         mcp.start();
 
+        
         // Clean Ctrl+C interceptor - Stop the server
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 
@@ -182,7 +185,11 @@ public class MCPServer {
 
             System.out.println("Server stopped cleanly.");
 
-        }, "mcp-shutdown-hook"));      
+        }, "mcp-shutdown-hook"));   
+        
+        long endTime=System.currentTimeMillis();
+
+        System.out.println("Server started in : "+(endTime-startTime)+" millis");
 
     }//main closing
 

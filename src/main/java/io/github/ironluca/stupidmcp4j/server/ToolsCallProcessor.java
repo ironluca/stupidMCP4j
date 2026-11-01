@@ -227,7 +227,7 @@ class ToolsCallProcessor extends Abstract2026Processor{
                 //If there are any exceptions, send the message of the exception
                 ObjectNode response=makeEmptyResponse(messageID, true);
                 ArrayNode content=(ArrayNode)response.get("result").get("content");
-                content.add(makeContent(e.getMessage()));
+                content.add(makeContent(msg));
 
                 sendResponse(exchange, 200, response);
                 return;

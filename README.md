@@ -101,23 +101,46 @@ This is a **custom transport**, which the MCP specification explicitly permits:
 The goal of `stupidMCP4j` is to expose existing Java functionality to AI agents with the absolute minimum runtime and operational complexity.  
 A plain request/response HTTP POST model is sufficient for the supported methods (`server/discover`, `tools/list`, `tools/call`) and avoids the additional surface area of the full Streamable HTTP binding.
 
-### Header handling
+### Security & Header Handling
 
-Because this is not Streamable HTTP, the transport-specific header requirements (`Mcp-Method`, `Mcp-Name`, strict `MCP-Protocol-Version` matching, etc.) are **not** enforced as mandatory. 
+Because `stupidMCP4j` uses a minimal, custom HTTP POST transport and is not Streamable HTTP the transport-specific header requirements (`Mcp-Method`, `Mcp-Name`, strict `MCP-Protocol-Version` matching, etc.) are **not** enforced as mandatory. Request validation focuses on strict perimeter defenses rather than complex streaming headers.
 
 - All protocol metadata is read from the JSON-RPC body (`params._meta`), which is the single source of truth.
 - The `method` comes from the body’s method, and the tool name from `params.name`.
 - If the modern MCP headers (`MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name`) are present, they are validated against the body. A mismatch results in HTTP 400 + error code `-32020` (HeaderMismatch).
 - If the headers are absent, the request is accepted and processed normally.
 
+> **Origin Header:** Browser-originated requests are not supported. The `Origin` header is strictly prohibited because cross-origin requests are unsupported. The presence of any `Origin` header results in an immediate **HTTP 403 Forbidden** (mitigating browser-based CSRF).
+> This server is not intended for direct browser use. Any request containing an `Origin` header is rejected with 403.
+
+#### Host Header Validation (DNS Rebinding Defense)
+
+To prevent DNS rebinding attacks from routing malicious browser traffic to an unauthenticated local server, incoming `Host` headers are strictly sanitized and validated against the configured bind address:
+
+> [!WARNING]
+> **Binding to Wildcard Addresses (`0.0.0.0`, `::`, `[::]`) is Strongly Discouraged**
+> Binding to a wildcard address disables Host header validation entirely. Because this server **does not implement native authentication**, exposing it across all local network interfaces significantly widens your attack surface.
+> **Always bind to a loopback address (`127.0.0.1` or `localhost`) or an explicit, single interface IP unless external network access is strictly required.**
+
+* **Wildcard Bindings (`0.0.0.0`, `::`, `[::]`):**
+  Host header verification is disabled. Since the server listens on all
+  available network interfaces, the Host header may legitimately contain
+  an IP address, FQDN, or hostname. The server cannot reliably determine
+  the intended hostname without additional configuration.
+
+  **Security implication:** When using wildcard bindings, deploy the server
+  only on trusted networks or behind an appropriately configured reverse
+  proxy. Host header validation must be enforced by the surrounding
+  infrastructure if required.
+
+* **Loopback Bindings (`localhost`, `127.0.0.1`, `::1`, `[::1]`):**  
+  The incoming `Host` header must strictly resolve to a canonical loopback address (with or without port delimiters). Requests bearing external domain names (e.g., `evil.com:8008`) are rejected with **HTTP 403 Forbidden**.
+* **Specific Interface Bindings (e.g., `192.168.1.50`, custom hostnames):**  
+  The incoming `Host` header must exactly match the configured host address. Any mismatch is rejected with **HTTP 403 Forbidden**.
+
+> **Security Note:** Requests lacking modern `Mcp-*` headers are accepted. An upstream proxy that relies on these headers to enforce policy must independently reject requests lacking them; this server only validates headers when they are present.
+
 This provides a basic defense against header/body mismatch while remaining compatible with a wide range of clients, and true to the KISS design.
-
->**Origin Header:** Is not supported as cross-origin requests are not supported. Detection of Origin header results in 
->an immediate 403 HTTP error.
-
-> **Security note:** requests without the MCP headers are accepted. A proxy that
-> enforces policy on them must also reject requests that lack them. That is the
-> proxy's responsibility; this server only checks headers that are present.
 
 ---
 

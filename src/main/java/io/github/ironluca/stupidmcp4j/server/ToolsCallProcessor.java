@@ -182,7 +182,7 @@ class ToolsCallProcessor extends Abstract2026Processor{
                 ArrayNode content=(ArrayNode)response.get("result").get("content");
 
                 for(int i=0;i<errors.size();i++)
-                    content.add(makeContent(errors.get(i)));
+                    content.add(makeContent(errors.get(i).getMessage()));
 
                 sendResponse(exchange, 200, response);
                 return;

@@ -199,7 +199,7 @@ class MCPHttpHandler implements HttpHandler {
         if (sentOrigin !=null)throw new SecurityException("Origin header rejected");
 
         // 2. If bound to a wildcard address, all host headers are intentionally permitted
-        //User has explicitly configured this
+        //User has explicitly configured this. If this request has landed here, it must have come through one interface
         if ("0.0.0.0".equals(host) || "::".equals(host) || "[::]".equals(host)) return;
 
         //Check Host header
@@ -224,12 +224,29 @@ class MCPHttpHandler implements HttpHandler {
 
         }//else closing
 
+        // 3. Bound to loopback: sentHost MUST also be a valid loopback address
+        if (LOOPBACK_HOSTS.contains(host)) {
+            if (!LOOPBACK_HOSTS.contains(sentHost)) {
+                throw new SecurityException("Forbidden: Host header is not a valid loopback address (" + sentHost + ")");
+            }
+            return;
+
+        }//if closing
+        
+        // 4. Bound to a specific non-loopback address (e.g. 192.168.1.50 or custom domain):
+        // sentHost MUST match the configured host
+        if (!host.equalsIgnoreCase(sentHost)) {
+            throw new SecurityException("Forbidden: Host header mismatch (" + sentHost + " != " + host + ")");
+        }        
+
+        /*
         // 1. If server.json binds to a non-loopback IP/interface (e.g., 0.0.0.0 or LAN IP), skip loopback checks
         if(!LOOPBACK_HOSTS.contains(host))return;//The user has chosen a host which is not in the loopback address, e.g. 172.17.90.4, can't help
 
         // 2. Bound to loopback: sentHost MUST also be a valid loopback address
         if (!LOOPBACK_HOSTS.contains(sentHost))
             throw new SecurityException("Forbidden: Host header is not a valid loopback address (" + sentHost + ")");
+        */
 
     }//securityCheck closing
 

@@ -103,17 +103,21 @@ A plain request/response HTTP POST model is sufficient for the supported methods
 
 ### Header handling
 
-Because this is not Streamable HTTP, the transport-specific header requirements (`Mcp-Method`, `Mcp-Name`, strict `MCP-Protocol-Version` matching, etc.) are **not** enforced as mandatory. It does not mirror or validate `MCP-Protocol-Version`, `Mcp-Method` or `Mcp-Name`. All protocol metadata is read from the JSON-RPC body (`params._meta`), which is the single source of truth. Standard clients may send those headers; they are ignored.
+Because this is not Streamable HTTP, the transport-specific header requirements (`Mcp-Method`, `Mcp-Name`, strict `MCP-Protocol-Version` matching, etc.) are **not** enforced as mandatory. 
 
-- The JSON-RPC body is treated as the source of truth.
-- Extraneous or vendor-specific headers are ignored.
-- Missing headers are accepted; the request is still processed.
+- All protocol metadata is read from the JSON-RPC body (`params._meta`), which is the single source of truth.
+- The `method` comes from the body’s method, and the tool name from `params.name`.
+- If the modern MCP headers (`MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name`) are present, they are validated against the body. A mismatch results in HTTP 400 + error code `-32020` (HeaderMismatch).
+- If the headers are absent, the request is accepted and processed normally.
 
-This keeps the server simple, compatible with a wide range of clients, and true to the KISS design.
+This provides a basic defense against header/body mismatch while remaining compatible with a wide range of clients, and true to the KISS design.
 
-> **Security note:** because the headers are not verified against the body, do not
-> enforce authorization or routing policy on `Mcp-Method` / `Mcp-Name` in a proxy
-> in front of this server.
+>**Origin Header:** Is not supported as cross-origin requests are not supported. Detection of Origin header results in 
+>an immediate 403 HTTP error.
+
+> **Security note:** requests without the MCP headers are accepted. A proxy that
+> enforces policy on them must also reject requests that lack them. That is the
+> proxy's responsibility; this server only checks headers that are present.
 
 ---
 

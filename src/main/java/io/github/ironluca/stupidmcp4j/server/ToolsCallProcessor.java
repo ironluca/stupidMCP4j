@@ -103,7 +103,7 @@ class ToolsCallProcessor extends Abstract2026Processor{
 
         try{
 
-            error=super.evaluate_metaError(messageID, bodyNode);
+            error=super.evaluate_Meta_Header_Error(exchange, messageID, bodyNode);
             if(error!=null){
 
                 sendResponse(exchange, 400, error);

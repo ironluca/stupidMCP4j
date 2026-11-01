@@ -89,8 +89,7 @@ public class ToolsListProcessor extends Abstract2026Processor{
 
     void process(JsonNode messageID, HttpExchange exchange, JsonNode bodyNode)throws IOException{
 
-      JsonNode error=super.evaluate_metaError(messageID, bodyNode);
-      error=super.evaluate_metaError(messageID, bodyNode);
+      JsonNode error=super.evaluate_Meta_Header_Error(exchange, messageID, bodyNode);
       if(error!=null){
 
           sendResponse(exchange, 400, error);

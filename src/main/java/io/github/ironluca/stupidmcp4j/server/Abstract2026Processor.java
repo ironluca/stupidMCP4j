@@ -3,6 +3,8 @@ package io.github.ironluca.stupidmcp4j.server;
 import static io.github.ironluca.stupidmcp4j.ConfigNV.mcpVersion;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.makeError;
 
+import com.sun.net.httpserver.HttpExchange;
+
 import tools.jackson.databind.JsonNode;
 
 /*
@@ -45,24 +47,35 @@ class Abstract2026Processor {
       }
     }
      * </pre>
+     * In addition, it also checks for any header mismatch, if client sends such header. If the header is not sent, 
+     * it is not checked, these checks are only performed for server/discover, tools/list and tools/call methods:
+     * <ol>
+     *  <li>MCP-Protocol-Version</li>
+     *  <li>Mcp-Method</li>
+     *  <li>Mcp-Name</li>
+     * </ol>
      * @param messageID The id of the current message
      * @param bodyNode The complete body node of the message
      * @return The error structure, if there is an error or null, if there is none.
      */
-    JsonNode evaluate_metaError(JsonNode messageID, JsonNode bodyNode){
+    JsonNode evaluate_Meta_Header_Error(HttpExchange exchange, JsonNode messageID, JsonNode bodyNode){
 
         JsonNode error=null;
+
+        //----------------- Mandatory _meta checks
 
         JsonNode clientProtocolVersionNode=bodyNode.at("/params/_meta/io.modelcontextprotocol~1protocolVersion");
         JsonNode clientCapabilityNode=bodyNode.at("/params/_meta/io.modelcontextprotocol~1clientCapabilities");
 
-        if(clientProtocolVersionNode.isMissingNode()){
+        //Check if protocol version is missing from _meta
+        if(clientProtocolVersionNode.isMissingNode() || clientProtocolVersionNode.isNull()){
 
             error=makeError(messageID, -32602, "Missing protocol version. Include io.modelcontextprotocol/protocolVersion in _meta");
             return error;
 
         }//if closing
 
+        //Check that the version is actually the one supported by the server
         if(!mcpVersion.equals(clientProtocolVersionNode.asString())){
 
             error=makeError(messageID, -32022, "Unsupported protocol version: "+clientProtocolVersionNode.asString());
@@ -70,15 +83,58 @@ class Abstract2026Processor {
 
         }//if closing
         
-        if(clientCapabilityNode.isMissingNode()){
+        if(clientCapabilityNode.isMissingNode() || clientCapabilityNode.isNull()){
 
-            error=makeError(messageID, -32602, "Missing client calabilities. Include io.modelcontextprotocol/clientCapabilities in _meta");
+            error=makeError(messageID, -32602, "Missing client capabilities. Include io.modelcontextprotocol/clientCapabilities in _meta");
             return error;
+
+        }//if closing
+
+
+        //Optional header checks, only checked if sent by client, not otherwise
+        String headerProtocolVersion=exchange.getRequestHeaders().getFirst("MCP-Protocol-Version");
+        String headerMcpMethod=exchange.getRequestHeaders().getFirst("Mcp-Method");
+        String headerMcpName=exchange.getRequestHeaders().getFirst("Mcp-Name");
+        
+        if(headerProtocolVersion!=null && !clientProtocolVersionNode.asString().equals(headerProtocolVersion)){
+
+            error=makeError(messageID, -32020, "MCP-Protocol-Version does not match with what is provided in _meta");
+            return error;
+
+        }//if closing
+
+        if(headerMcpMethod!=null){
+
+            //NOTE: This will never be missing, otherwise it will not come this far
+            String method=bodyNode.at("/method").asString();
+
+            if(!method.equals(headerMcpMethod)){
+
+                error=makeError(messageID, -32020, "Mcp-Method does not match with what is provided in _meta");
+                return error;
+
+            }//if closing
+
+        }//if closing
+
+        //This is intended, if a client send Mcp-Name for tools/list, then it is client libraries problem.
+        //If a header is sent, it will be checked.
+        if(headerMcpName!=null){
+
+            JsonNode paramToolName=bodyNode.at("/params/name");
+            if(paramToolName.isMissingNode() || 
+               paramToolName.isNull() || 
+               !paramToolName.asString().equals(headerMcpName)){
+
+                error=makeError(messageID, -32020, "Mcp-Name does not match with what is provided in params");
+                return error;
+
+            }//if closing
 
         }//if closing
 
         return error;
 
-    }//evaluate_metaError closing
+    }//evaluate_Meta_Header_Error closing
 
 }//class closing

@@ -13,11 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.networknt.schema.Schema;
-import com.networknt.schema.SchemaRegistry;
-import com.networknt.schema.SpecificationVersion;
 import com.sun.net.httpserver.HttpExchange;
 
-import io.github.ironluca.stupidmcp4j.tools.ToolDefinition;
 import io.github.ironluca.stupidmcp4j.tools.ToolRegistry;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -81,8 +78,6 @@ class ToolsCallProcessor extends Abstract2026Processor{
 
     private ToolRegistry registry;
 
-    private SchemaRegistry schemaFactory;
-
     ToolsCallProcessor(){
 
         super();
@@ -90,8 +85,6 @@ class ToolsCallProcessor extends Abstract2026Processor{
         try{
 
             registry=ToolRegistry.getToolRegistry();
-
-            schemaFactory=SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
 
         }catch(Exception e){e.printStackTrace();}
 
@@ -155,15 +148,11 @@ class ToolsCallProcessor extends Abstract2026Processor{
 
             }//if closing
 
-            //Get the too definition, this contains the schema
-            ToolDefinition toolDef=registry.getToolDefinition(toolName);
-            ObjectNode schemaNode=toolDef.inputSchema;
-
-
 
             //Validate the parameter against schema. If validation fails send each error as a separate object in 'content' 
             //of the response. Set the 'isError' to true.
-            Schema schema=schemaFactory.getSchema(schemaNode);
+            //Schema schema=schemaFactory.getSchema(schemaNode);
+            Schema schema=registry.getToolInputSchema(toolName);
             List<com.networknt.schema.Error> errors=null;
             
             //Check if the parameter is actually provided, it is not mandatory by specification.

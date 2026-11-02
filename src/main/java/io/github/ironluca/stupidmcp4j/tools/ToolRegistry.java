@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SpecificationVersion;
+
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -45,8 +49,11 @@ public class ToolRegistry {
     private Path toolsConfigPath;
 
     private List<ToolDefinition> toolDefs;
+    private SchemaRegistry schemaRegistry;
+
     private Map<String, Method> toolMethodMap;
     private Map<Method, Object> toolObjectMap;
+    private Map<String, Schema> toolInputSchemaMap;
 
     private Pattern nameValdationPattern;
 
@@ -60,8 +67,11 @@ public class ToolRegistry {
         toolDefs=new ArrayList<>();
         toolMethodMap=new HashMap<>();
         toolObjectMap=new HashMap<>();
+        toolInputSchemaMap=new HashMap<>();
 
         nameValdationPattern=Pattern.compile(toolNameValidationRegex);
+
+        schemaRegistry=SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12);
 
         init();
 
@@ -111,7 +121,6 @@ public class ToolRegistry {
                 if(toolDef.get("inputSchema").isNull())
                     throw new RuntimeException("The tool does not define inputSchema, which is mandatory.\n "+toolDef.toPrettyString());
 
-                
 
                 try{
 
@@ -120,6 +129,7 @@ public class ToolRegistry {
                     //Check if there is already a tool with the same name registered, duplicate tool names are not allowed
                     if(toolMethodMap.containsKey(toolName))
                         throw new RuntimeException("Duplicate tool name detected. Tool names must be unique\n "+toolDef.toPrettyString());
+
 
                     //Load the class
                     String implClassName=toolDef.get("implementation").asString();
@@ -167,8 +177,24 @@ public class ToolRegistry {
 
                     //Create the tool definition
                     ToolDefinition toolDefinitionObject=mapper.readValue(toolDef.toString(), ToolDefinition.class);
-                    toolDefs.add(toolDefinitionObject);    
+                    toolDefs.add(toolDefinitionObject);
                     
+                    //Validate and load the tool input schema and keep it in toolInputSchemaMap
+                    //Obtain the Meta-Schema using its official schema location URI
+                    //The official meta-schemas are bundled directly in the library's classpath   
+                    Schema schema=schemaRegistry.getSchema(toolDefinitionObject.inputSchema);
+
+                    try{
+
+                        schema.initializeValidators();
+                        toolInputSchemaMap.put(toolName, schema);
+
+                    }catch(RuntimeException e){
+
+                        e.printStackTrace();
+                        throw new RuntimeException("The schema for the tool is not valid.\n"+toolDef.toPrettyString());
+
+                    }//catch closing
 
                     //Register the tool name and exec method
                     toolMethodMap.put(toolName, execMethod);
@@ -196,6 +222,8 @@ public class ToolRegistry {
     }//init closing
 
     public List<ToolDefinition> getToolList(){return toolDefs;}
+
+    public Schema getToolInputSchema(String toolName){return toolInputSchemaMap.get(toolName);}
 
     public Method getToolMethod(String toolName){return toolMethodMap.get(toolName);}
 

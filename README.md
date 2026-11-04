@@ -73,6 +73,30 @@ If you just need an enterprise AI agent (Claude, Cursor, custom agents) to secur
 
 ---
 
+## LangChain4j Compatibility
+
+**stupidMCP4j is compatible with the LangChain4j MCP Client.**
+
+The server has been tested successfully with [LangChain4j](https://github.com/langchain4j/langchain4j), using its native MCP client integration.
+
+LangChain4j can discover tools exposed by stupidMCP4j, map their JSON input schemas to LangChain4j tool specifications, and invoke them without requiring custom integration code.
+
+This allows stupidMCP4j to be used as a lightweight, standalone Java MCP server backend for LangChain4j-based applications.
+
+### Integration
+
+LangChain4j provides the MCP client and tool-provider components needed to connect to stupidMCP4j. Refer to the [LangChain4j MCP documentation](https://docs.langchain4j.dev/integrations/language-models/mcp/) for client configuration and usage.
+
+**Verified:**
+- MCP server connection and initialization.
+- Tool discovery and listing.
+- JSON input schema mapping, including required and optional parameters.
+- Tool invocation and result handling.
+
+The integration uses the standard MCP protocol; no stupidMCP4j-specific LangChain4j adapter is required.
+
+---
+
 ## Transport
 
 `stupidMCP4j` uses a **custom HTTP POST transport**.

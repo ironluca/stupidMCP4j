@@ -7,6 +7,7 @@ import static io.github.ironluca.stupidmcp4j.server.ServerUtil.mapper;
 import static io.github.ironluca.stupidmcp4j.server.ServerUtil.sendResponse;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import com.sun.net.httpserver.HttpExchange;
 
@@ -32,11 +33,27 @@ import tools.jackson.databind.node.NullNode;
 class PrimaryDispatcher {
 
     private ServerDiscoverProcessor serverDiscover=new ServerDiscoverProcessor();
-    private InitializeProcessor initialize=new InitializeProcessor();
-    private NotificationsInitializedProcessor notificationsInitialized=new NotificationsInitializedProcessor();
-    private ToolsListProcessor toolsList=new ToolsListProcessor();
-    private ToolsCallProcessor toolsCall=new ToolsCallProcessor();
-    private PingProcessor ping=new PingProcessor();
+    private InitializeProcessor initialize;
+    private NotificationsInitializedProcessor notificationsInitialized;
+    private ToolsListProcessor toolsList;
+    private ToolsCallProcessor toolsCall;
+    private PingProcessor ping;
+
+    /**
+     * Initialize all the MCP method dispatchers.
+     * 
+     * @param serverConfigPath The path to conf/server.json, this can be null
+     */
+    PrimaryDispatcher(Path serverConfigPath){
+
+        serverDiscover=new ServerDiscoverProcessor();
+        initialize=new InitializeProcessor();
+        notificationsInitialized=new NotificationsInitializedProcessor();
+        toolsList=new ToolsListProcessor();
+        toolsCall=new ToolsCallProcessor(serverConfigPath);
+        ping=new PingProcessor();
+
+    }//constructor closing
 
     void dispatch(HttpExchange exchange, String requestBody) throws IOException{
         

@@ -41,7 +41,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class MCPServer {
 
+    /** The full path to the conf/server.json, if it exists, otherwise this is null. */
     private Path serverConfPath;
+
+    /** The full path to the conf/tools.json file. This always exists */
     private Path toolsConfPath;
 
     private String host=defaultHost;
@@ -53,10 +56,9 @@ public class MCPServer {
 
     private void start(){
 
-        //System.out.println("System class.path: " + System.getProperty("java.class.path"));
-
+        
+        //Retrieve the 'MCP_HOME environment variable'. This must be set
         String mcphome=System.getenv(envStupidmcpHome);
-
         System.out.println("##### stupidMCP4j #####");
         System.out.println("## Retrieving environment variables ...");
         if(mcphome==null || mcphome.isBlank()){
@@ -69,10 +71,12 @@ public class MCPServer {
         System.out.println("Done ...");
 
 
+        //Resolve the conf/server.json and conf/tools.json file paths
         System.out.println("## Checking configuration files ...  ");
         //Get the relevant paths of the directory and files.
         serverConfPath=Paths.get(mcphome, confDir, serverConf);
         toolsConfPath=Paths.get(mcphome, confDir, toolsConf);
+
 
         //The tools.json must exist in conf directory, without this the server cannot operate
         if(!Files.exists(toolsConfPath)){
@@ -85,9 +89,9 @@ public class MCPServer {
         System.out.println("Done ...");
 
 
-        System.out.println("## Iniializing connection aspects ...  ");
         //Initialize the host and port of the server, if a configuration is provided, otherwise default to the 
         //default values for these
+        System.out.println("## Iniializing connection aspects ...  ");
         if(!Files.exists(serverConfPath)){
 
             System.out.println("No explicit server configuration was found, using defaults. Host: "+host+" and Port: "+port);
@@ -98,8 +102,8 @@ public class MCPServer {
         System.out.println("Done ...");
 
 
+        //Initialize the tools registry
         System.out.println("## Iniializing tool registry ...  ");
-        //Initialize the tools
         try{
 
             ToolRegistry.getToolRegistry();
@@ -117,7 +121,7 @@ public class MCPServer {
 
         System.out.println("## Starting daemon ...  ");
         //Initialize and start the server
-        //Assign an executor so requests run concurrently
+        //Assign an executor so requests run concurrently vis thread pool
         int corePoolSize = Runtime.getRuntime().availableProcessors() * 2;
         executor = new ThreadPoolExecutor(
             corePoolSize,
@@ -132,7 +136,7 @@ public class MCPServer {
             server = HttpServer.create();
             server.bind(new InetSocketAddress(host, port), 128);
             server.setExecutor(executor);
-            server.createContext("/mcp", new MCPHttpHandler(host, port));
+            server.createContext("/mcp", new MCPHttpHandler(host, port, serverConfPath));
             server.start();
 
         }catch(BindException be){System.out.println("The port "+port+" is in use, cannot bind."); System.exit(1);}

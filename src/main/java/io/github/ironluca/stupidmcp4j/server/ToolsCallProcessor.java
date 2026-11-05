@@ -8,6 +8,8 @@ import static io.github.ironluca.stupidmcp4j.server.ServerUtil.sendResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +79,9 @@ import tools.jackson.databind.node.ObjectNode;
 class ToolsCallProcessor extends Abstract2026Processor{
 
     private ToolRegistry registry;
+    private List<String> toolArgHeaders;
 
-    ToolsCallProcessor(){
+    ToolsCallProcessor(Path serverConfigPath)throws RuntimeException{
 
         super();
 
@@ -86,7 +89,26 @@ class ToolsCallProcessor extends Abstract2026Processor{
 
             registry=ToolRegistry.getToolRegistry();
 
-        }catch(Exception e){e.printStackTrace();}
+            toolArgHeaders=new ArrayList<>();
+
+            //Get all the 'toolArgHeaders' as defined in config/server.json configuration file.
+            //Since this is optional attribute of the configuration, none may be present.
+            if(serverConfigPath!=null && serverConfigPath.toFile().exists()){
+
+                JsonNode config=mapper.readTree(serverConfigPath.toFile());
+                if(config.isObject() && 
+                   config.has("toolArgHeaders") && 
+                   config.get("toolArgHeaders").isArray()){
+
+                    ArrayNode toolArgHeaderNode=(ArrayNode)config.get("toolArgHeaders");
+                    for(int i=0;i<toolArgHeaderNode.size();i++)
+                        toolArgHeaders.add(toolArgHeaderNode.get(i).asString().trim());
+
+                }//if closing
+
+            }//if closing
+
+        }catch(Exception e){e.printStackTrace(); throw new RuntimeException(e);}
 
     }//constructor closing
 
@@ -180,13 +202,22 @@ class ToolsCallProcessor extends Abstract2026Processor{
             
 
             //Prepare the params, it any argument is at all provided
-            Map<String, Object> params = new HashMap<>();//Initialize to an empty map
+            Map<String, Object> params = new HashMap<>();//Initialize to an empty map, this is never null
             if(!argumentsNode.isMissingNode() && !argumentsNode.isNull() && argumentsNode.isObject()){
 
                 params=mapper.convertValue(argumentsNode, new TypeReference<Map<String, Object>>() {});
 
             }//if closing
 
+            //Package the 'toolArgHeaders', if there are any. These headers are passed from upstream for tool to use.
+            //The header name as provided in conf/server.json/toolArgHeaders are keys, the first value is the value.
+            //This only supports one value for a specific header.
+            for(String h: toolArgHeaders){
+
+                if(exchange.getRequestHeaders().containsKey(h))
+                    params.put(h, exchange.getRequestHeaders().getFirst(h));
+
+            }//for closing
 
             //Invoke the tool and process the result
             try{

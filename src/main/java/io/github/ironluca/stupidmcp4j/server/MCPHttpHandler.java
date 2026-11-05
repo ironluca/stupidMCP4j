@@ -12,6 +12,7 @@ import tools.jackson.databind.node.NullNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Set;
 
 /*
@@ -32,9 +33,7 @@ import java.util.Set;
 class MCPHttpHandler implements HttpHandler {
 
     private static final int MAX_REQ_LIMIT=1024*1024;//1 MB
-
-    //This should be one per class
-    private static final PrimaryDispatcher dispatcher=new PrimaryDispatcher();
+    
     private static final Set<String> LOOPBACK_HOSTS = Set.of(
         "localhost",
         "127.0.0.1",
@@ -43,12 +42,20 @@ class MCPHttpHandler implements HttpHandler {
     );
 
     private String host;
-    private int port;
+    private PrimaryDispatcher dispatcher;
 
-    MCPHttpHandler(String host, int port){
+    /**
+     * The constructor initializes the primary dispatcher.
+     * 
+     * @param host The server host, required
+     * @param port The port
+     * @param serverConfigPath The path to conf/server.json file, this can be null
+     */
+    MCPHttpHandler(String host, int port, Path serverConfigPath){
 
         if(host!=null)this.host=host.toLowerCase();
-        this.port=port;
+
+        this.dispatcher=new PrimaryDispatcher(serverConfigPath);
 
     }//constructor closing
 

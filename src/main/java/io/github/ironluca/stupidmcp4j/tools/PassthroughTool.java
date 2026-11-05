@@ -42,6 +42,10 @@ public class PassthroughTool {
      */
     public Object execute(Map<String, Object> params) throws Exception{
 
+        System.out.println("===== Tool Paramertes =============");
+        System.out.println(params);
+        System.out.println("===================================");
+
         String message="This is a message from pass through tool";
 
         if(params.containsKey("message"))message=params.get("message").toString();

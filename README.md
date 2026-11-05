@@ -168,6 +168,36 @@ This provides a basic defense against header/body mismatch while remaining compa
 
 ---
 
+### HTTP Header Propagation to Tools
+
+stupidMCP4j supports optional propagation of HTTP request headers to tool implementations.
+
+A tool can specify which HTTP headers should be made available as arguments through the `toolArgHeaders` property in `conf.server.json`.
+
+**Example:**
+
+```json
+{
+
+    "host":"127.0.0.1",
+    "port":8008,
+    "toolArgHeaders":["x-client-id", "x-user-id"]
+
+}
+```
+
+During tool execution, stupidMCP4j checks the incoming HTTP request for the configured headers. If a header is present, its first value is added to the tool's parameter map (`Map<String, Object>`).
+
+The parameter map uses the header name exactly as specified in `conf/server.json`. No case conversion is performed.
+
+Headers that are not present in the incoming request are simply omitted from the parameter map.
+
+This allows tool implementations to access caller-specific information, such as client and user identifiers, without introducing HTTP-specific dependencies into tool implementations.
+
+This mechanism is useful when tools need to support **multi-tenant** environments.
+
+---
+
 ## How It Works
 
 `stupidMCP4j` strips away the complexity of MCP into a classic Command Dispatcher model:

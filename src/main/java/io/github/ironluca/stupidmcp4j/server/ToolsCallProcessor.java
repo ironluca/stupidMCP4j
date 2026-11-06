@@ -101,8 +101,15 @@ class ToolsCallProcessor extends Abstract2026Processor{
                    config.get("toolArgHeaders").isArray()){
 
                     ArrayNode toolArgHeaderNode=(ArrayNode)config.get("toolArgHeaders");
-                    for(int i=0;i<toolArgHeaderNode.size();i++)
-                        toolArgHeaders.add(toolArgHeaderNode.get(i).asString().trim());
+                    for(int i=0;i<toolArgHeaderNode.size();i++){
+
+                        //Only consider header names that start with 'x-' or 'X-'
+                        //No other header names are considered for tool argument header
+                        String headerStr=toolArgHeaderNode.get(i).asString().trim();
+                        if(headerStr.toLowerCase().startsWith("x-"))toolArgHeaders.add(headerStr);
+
+                    }//for closing
+                        
 
                 }//if closing
 
